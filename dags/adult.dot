@@ -1,0 +1,7 @@
+digraph G {
+    Education -> Occupation
+    Occupation -> Income
+    Workclass -> Occupation
+    Age -> "Hours-per-week"
+    "Hours-per-week" -> Income
+}
