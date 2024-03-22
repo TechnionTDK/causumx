@@ -65,11 +65,8 @@ def main():
             else:
                 causumx = CauSumX(selected_dataset)
 
-            # Get explanation (mock functionality for demonstration)
-            explanation = {"summary": "This is a mock explanation based on the selected dataset and query."}
-
-            if explanation:
-                explanation, dot_graph = get_causal_explanation(query_input, size_constraint)
+            if True:
+                dot_graph = get_causal_explanation(query_input, size_constraint)
                 col1, col2 = st.columns(2)
 
                 with col1:
@@ -166,7 +163,7 @@ def main():
                         else:
                             return 'Other'
 
-                    data['Income Category'] = data['Country'].apply(income_category)
+                    data['Category'] = data['Country'].apply(income_category)
 
                     income_color_scale = alt.Scale(domain=['High GDP', 'EU', 'High GINI', 'Other'],
                                                    range=['blue', 'red', 'purple', 'gray'])
@@ -174,24 +171,25 @@ def main():
                     chart = alt.Chart(data).mark_bar().encode(
                         x=alt.X('Country:N', sort=alt.SortField('ConvertedSalary', order='descending')),
                         y='ConvertedSalary:Q',
-                        color=alt.Color('Income Category:N', scale=income_color_scale,
+                        color=alt.Color('Category:N', scale=income_color_scale,
                                         legend=alt.Legend(title="Income Level")),
                     )
 
                     st.altair_chart(chart, use_container_width=True)
 
-                    # Use Streamlit to display the figure
-                    # TODO: all the country in europe should be yellow
-                    # TODO: countries with a high GDP level should be green
-                    # TODO: hover over "Europe" - "There are 2000 individuals in the dataset from Europe"
-                    # TODO: countries with a high GDP - "There are 1000 individuals in the dataset from countries with a high GDP"
-                    # TODO: countries with a high Gini coefficient  - "There are 500 individuals in the dataset from countries with a high Gini coefficient"
-                    # countries with a high Gini coefficient should be pink
-                    # st.pyplot(fig)
-
                 with col2:
                     st.markdown("### 📊 Visualization")
-                    st.graphviz_chart(dot_graph, use_container_width=True)
+                    tab1, tab2, tab3 = st.tabs(["Graph 1", "Graph 2", "Graph 3"])
+                    with tab1:
+                        st.graphviz_chart(dot_graph, use_container_width=True)
+
+                    # Display Graph 2 in Tab 2
+                    with tab2:
+                        st.graphviz_chart(get_causal_explanation(None, None, start="FormalEducation", end="ConvertedSalary", color='red'), use_container_width=True)
+
+                    # Display Graph 3 in Tab 3
+                    with tab3:
+                        st.graphviz_chart(get_causal_explanation(None, None, start="Age", end="ConvertedSalary", color='purple'), use_container_width=True)
 
 
             else:

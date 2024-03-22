@@ -1,13 +1,31 @@
 import streamlit as st
 from graphviz import Digraph
+import networkx as nx
 
 
-def get_causal_explanation(query, constraint):
-    # Placeholder for the algorithm implementation
-    # Returns a tuple of (natural language explanation, dot graph for visualization)
-    explanation = "Given the GROUP-BY clause on 'ProductCategory', the significant variation in sales is primarily due to seasonal demand changes and promotional events. For instance, 'Electronics' peak during November due to Black Friday sales."
+def find_all_paths(graph_data, start, end):
+    """
+    Finds all paths from start node to end node.
 
-    # Your DAG representation
+    :param graph_data: List of tuples or a list of strings with '->' indicating edges.
+    :param start: Start node.
+    :param end: End node.
+    :return: A list of paths, where each path is a list of nodes.
+    """
+    G = nx.DiGraph()
+
+    # Add edges to the graph
+    for item in graph_data:
+        if '->' in item:
+            source, target = item.split(' -> ')
+            G.add_edge(source.strip(), target.strip())
+
+    # Find all simple paths
+    paths = list(nx.all_simple_paths(G, source=start, target=end))
+
+    return paths
+
+def get_causal_explanation(query, constraint, start='Continent', end='ConvertedSalary', color='blue'):
     dag = [
         'Continent',
         'ComputerHoursPerDay',
@@ -53,6 +71,13 @@ def get_causal_explanation(query, constraint):
         'ComputerHoursPerDay -> ConvertedSalary'
     ]
 
+    paths = find_all_paths(dag, start, end)
+
+    # Create a set of all edges that are part of any path from 'Continent' to 'ConvertedSalary'
+    edges_in_paths = set()
+    for path in paths:
+        edges_in_paths.update(zip(path, path[1:]))
+
     # Initialize a Digraph object
     dot = Digraph(comment='The Research DAG')
 
@@ -60,36 +85,12 @@ def get_causal_explanation(query, constraint):
     for item in dag:
         if '->' in item:
             start, end = item.split(' -> ')
-            dot.edge(start, end)
+            start, end = start.strip(), end.strip()
+            if (start, end) in edges_in_paths:
+                dot.edge(start, end, color=color)  # Color the path from 'Continent' to 'ConvertedSalary'
+            else:
+                dot.edge(start, end)
         else:
-            dot.node(item)
+            dot.node(item.strip())
 
-    # TODO: students vertex to salary - this route should be marked red (like with a marker)
-    return explanation, dot
-
-# def visualize_explanation_with_dag():
-#     st.subheader("Causal Explanation Visualization")
-#
-#     # Define the DAG using Graphviz's Dot language as a string
-#     dag_dot = """
-#         digraph {
-#             "A" [label="Education"]
-#             "B" [label="Workclass"]
-#             "C" [label="Occupation"]
-#             "D" [label="Hours-per-week"]
-#             "E" [label="Income"]
-#
-#             A -> C
-#             B -> C
-#             C -> D
-#             D -> E
-#         }
-#     """
-#
-#     # Use Streamlit's built-in function to display the graph
-#     st.graphviz_chart(dag_dot, use_container_width=True)
-
-
-if __name__ == '__main__':
-    st.title('Causal Explanation Visualization Demo')
-    visualize_explanation_with_dag()
+    return dot
