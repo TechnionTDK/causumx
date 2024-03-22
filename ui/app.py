@@ -1,42 +1,13 @@
 import streamlit as st
+import altair as alt
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
 from src.causumx import CauSumX
 from ui.explanation_visualizer import get_causal_explanation
 
 st.set_page_config(page_title="CauSumX UI", layout="wide")
-
-import streamlit as st
-import matplotlib.pyplot as plt
-import numpy as np
-
-# Example data
-countries = ["USA", "Canada", "Germany", "UK", "France"]
-values = [10, 20, 30, 40, 50]
-
-import pandas as pd
-import streamlit as st
-
-
-# Function to process the data
-def process_data(csv_file):
-    # Load the CSV file into a DataFrame
-    df = pd.read_csv(csv_file)
-
-    # Group by 'Country' and calculate the average 'Salary' for each country
-    country_salary_avg = df.groupby('Country')['ConvertedSalary'].mean().reset_index()
-
-    # Sort the countries by the size of their groups in descending order
-    # and then take the top 15
-    top_countries = df['Country'].value_counts().head(15).index.tolist()
-
-    # Filter the average salary DataFrame to include only the top 15 countries
-    top_countries_avg_salary = country_salary_avg[country_salary_avg['Country'].isin(top_countries)]
-
-    # Sort the result by average salary in descending order to see the top countries by average salary
-    top_countries_avg_salary_sorted = top_countries_avg_salary.sort_values(by='ConvertedSalary', ascending=False)
-
-    return top_countries_avg_salary_sorted
-
-
 
 
 def plot_bar_chart(countries, values):
@@ -54,11 +25,11 @@ def plot_bar_chart(countries, values):
 
     return fig
 
-
-
 def main():
     st.title('✨ CauSumX UI')
     st.markdown("#### A UI for Explaining the Causes of Aggregate SQL Queries Results")
+
+    data = pd.read_csv('data/so_countries_col_new.csv')
 
     st.sidebar.header('1. Upload Your Data')
     uploaded_dataset = st.sidebar.file_uploader("Upload a dataset CSV file", type=['csv'])
@@ -68,8 +39,6 @@ def main():
         # Display the name of the uploaded files (optional)
         st.write("Uploaded dataset:", uploaded_dataset.name)
         st.write("Uploaded DAG:", uploaded_dag.name)
-
-
 
     st.sidebar.header('Or Select a Preloaded Dataset')
     dataset_options_with_explanations = load_dataset_options()
@@ -106,7 +75,16 @@ def main():
                 with col1:
                     st.markdown("### 💬 Causal Explanation")
 
-                    europe_tooltip = """<span class="tooltip">Europe<span class="tooltiptext">2123 records</span></span>"""
+                    # Count records where the 'Continent' column == 'EU'
+                    records_from_europe_countries = data[data['Continent'] == 'EU'].shape[0]
+
+                    # Count records where the 'GDP' column == 'High'
+                    records_from_high_GDP_countries = data[data['GDP'] == 'High'].shape[0]
+
+                    # Count records where the 'Gini' column == 'High'
+                    records_from_high_Gini_countries = data[data['GINI'] == 'High'].shape[0]
+
+                    europe_tooltip = f"""<span class="tooltip">Europe<span class="tooltiptext">{records_from_europe_countries} records</span></span>"""
 
                     tooltip_html = """
                     <style>
@@ -146,12 +124,12 @@ def main():
                     tooltip_html += f"""<p>For countries in {europe_tooltip}, the most substantial effect on high salaries (effect size of 36K, 𝑝 < 1e-3) is observed for individuals under 35 with a Master’s degree. 
                     Conversely, being a student has the greatest adverse impact on annual income (effect size: -39K, 𝑝 < 1e-3).</p>"""
 
-                    high_GDP_level_tooltip = """<span class="tooltip" style="background-color: blue;">high GDP level<span class="tooltiptext">1000 records</span></span>"""
+                    high_GDP_level_tooltip = f"""<span class="tooltip" style="background-color: blue;">high GDP level<span class="tooltiptext">{records_from_high_GDP_countries} records</span></span>"""
 
                     tooltip_html += f"""<p>For countries with a {high_GDP_level_tooltip}, the most substantial effect on high salaries (effect size of 41K, 𝑝 < 1e-3 ) is observed for C-level executives. 
                     Conversely, being over 55 with a bachelor’s degree has the greatest adverse impact on annual income (effect size: -35K,𝑝 < 1e-4 ).</p>"""
 
-                    high_Gini_coefficient_tooltip = """<span class="tooltip" style="background-color: purple;">high Gini coefficient<span class="tooltiptext">500 records</span></span>"""
+                    high_Gini_coefficient_tooltip = f"""<span class="tooltip" style="background-color: purple;">high Gini coefficient<span class="tooltiptext">{records_from_high_Gini_countries} records</span></span>"""
 
                     tooltip_html += f"""<p>For countries with a {high_Gini_coefficient_tooltip}, the most substantial effect on high salaries (effect size of 29K, 𝑝 < 1e-4) is observed for white individuals under 45. 
                     Conversely, being having no formal degree has the greatest adverse impact on annual income (effect size: -28K, 𝑝 < 1e-3).</p>"""
@@ -165,18 +143,42 @@ def main():
 
                     st.text('Top 15 Countries by Average Salary')
 
-                    # File uploader allows user to add their own CSV
-                    csv_file = open('so_countries_col_new.csv', 'r')
+                    eu_data = data[data['Continent'] == 'EU']
+                    eu_countries = eu_data['Country'].unique().tolist()
 
-                    if csv_file is not None:
-                        data = process_data(csv_file)
+                    high_gdp_data = data[data['GDP'] == 'High']
+                    high_gdp_countries = high_gdp_data['Country'].unique().tolist()
 
-                        # Display the DataFrame
-                        # st.write(data)
+                    high_gini_data = data[data['GINI'] == 'High']
+                    high_gini_countries = high_gini_data['Country'].unique().tolist()
 
-                        # Create a bar chart
-                        st.bar_chart(data.set_index('Country')['ConvertedSalary'])
+                    average_salary_per_country = data.groupby('Country')['ConvertedSalary'].mean()
 
+                    data = average_salary_per_country.reset_index()
+
+                    def income_category(country):
+                        if country in high_gdp_countries:
+                            return 'High GDP'
+                        elif country in eu_countries:
+                            return 'EU'
+                        elif country in high_gini_countries:
+                            return 'High GINI'
+                        else:
+                            return 'Other'
+
+                    data['Income Category'] = data['Country'].apply(income_category)
+
+                    income_color_scale = alt.Scale(domain=['High GDP', 'EU', 'High GINI', 'Other'],
+                                                   range=['blue', 'red', 'purple', 'gray'])
+
+                    chart = alt.Chart(data).mark_bar().encode(
+                        x=alt.X('Country:N', sort=alt.SortField('ConvertedSalary', order='descending')),
+                        y='ConvertedSalary:Q',
+                        color=alt.Color('Income Category:N', scale=income_color_scale,
+                                        legend=alt.Legend(title="Income Level")),
+                    )
+
+                    st.altair_chart(chart, use_container_width=True)
 
                     # Use Streamlit to display the figure
                     # TODO: all the country in europe should be yellow
@@ -198,9 +200,9 @@ def main():
 
 def load_dataset_options():
     datasets_with_explanations = {
-        "adult": "The Adult Income dataset contains demographic and employment information from the 1994 U.S. Census database, aimed at predicting if an individual's income exceeds $50K/year.",
-        "german": "The German Credit Data classifies individuals as good or bad credit risks based on several attributes, used commonly in credit scoring models.",
-        "stackoverflow": "Derived from Stack Overflow, this dataset includes data on posts, comments, votes, and more, ideal for analyzing software development trends."
+        "Stack-Overflow": "Derived from Stack Overflow, this dataset includes data on posts, comments, votes, and more, ideal for analyzing software development trends.",
+        "Adults": "The Adult Income dataset contains demographic and employment information from the 1994 U.S. Census database, aimed at predicting if an individual's income exceeds $50K/year.",
+        "German": "The German Credit Data classifies individuals as good or bad credit risks based on several attributes, used commonly in credit scoring models.",
     }
     return datasets_with_explanations
 

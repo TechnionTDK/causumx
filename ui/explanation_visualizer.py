@@ -6,7 +6,6 @@ def get_causal_explanation(query, constraint):
     # Placeholder for the algorithm implementation
     # Returns a tuple of (natural language explanation, dot graph for visualization)
     explanation = "Given the GROUP-BY clause on 'ProductCategory', the significant variation in sales is primarily due to seasonal demand changes and promotional events. For instance, 'Electronics' peak during November due to Black Friday sales."
-    from graphviz import Digraph
 
     # Your DAG representation
     dag = [
