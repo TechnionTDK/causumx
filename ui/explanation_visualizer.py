@@ -53,6 +53,9 @@ def get_causal_explanation(query, constraint, start='Continent', end='ConvertedS
         'Country -> FormalEducation',
         'Country -> RaceEthnicity',
         'Continent -> Country',
+        'Country -> GINI',
+        'Country -> GDP',
+        'Country -> HDI',
         'FormalEducation -> DevType',
         'FormalEducation -> UndergradMajor',
         'Continent -> UndergradMajor',
@@ -65,20 +68,37 @@ def get_causal_explanation(query, constraint, start='Continent', end='ConvertedS
         'DevType -> ComputerHoursPerDay',
         'Age -> ConvertedSalary',
         'Age -> DevType',
+        'Age -> Student',
+        'Student -> DevType',
+        'Student -> ConvertedSalary',
         'Age -> Dependents',
         'Age -> FormalEducation',
         'Dependents -> ComputerHoursPerDay',
         'ComputerHoursPerDay -> ConvertedSalary'
     ]
 
-    paths = find_all_paths(dag, start, end)
-
-    # Create a set of all edges that are part of any path from 'Continent' to 'ConvertedSalary'
+    # paths = find_all_paths(dag, start, end)
+    #
+    # # Create a set of all edges that are part of any path from 'Continent' to 'ConvertedSalary'
     edges_in_paths = set()
-    for path in paths:
-        edges_in_paths.update(zip(path, path[1:]))
+    # for path in paths:
+    #     edges_in_paths.update(zip(path, path[1:]))
+    #
+    # # Initialize a Digraph object
+    # dot = Digraph(comment='The Research DAG')
+    #
+    # # Add nodes and edges to the graph
+    # for item in dag:
+    #     if '->' in item:
+    #         start, end = item.split(' -> ')
+    #         start, end = start.strip(), end.strip()
+    #         if (start, end) in edges_in_paths:
+    #             dot.edge(start, end, color=color)  # Color the path from 'Continent' to 'ConvertedSalary'
+    #         else:
+    #             dot.edge(start, end)
+    #     else:
+    #         dot.node(item.strip())
 
-    # Initialize a Digraph object
     dot = Digraph(comment='The Research DAG')
 
     # Add nodes and edges to the graph
@@ -86,6 +106,10 @@ def get_causal_explanation(query, constraint, start='Continent', end='ConvertedS
         if '->' in item:
             start, end = item.split(' -> ')
             start, end = start.strip(), end.strip()
+            if start == 'Student' or start == 'Age' or start == 'FormalEducation':
+                dot.node(start, color='red')
+            if start == start == 'Age' or start == 'FormalEducation':
+                dot.node(start, color='green')
             if (start, end) in edges_in_paths:
                 dot.edge(start, end, color=color)  # Color the path from 'Continent' to 'ConvertedSalary'
             else:
@@ -94,3 +118,4 @@ def get_causal_explanation(query, constraint, start='Continent', end='ConvertedS
             dot.node(item.strip())
 
     return dot
+
