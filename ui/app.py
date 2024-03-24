@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import time
 
-from src.causumx import CauSumX
 from ui.explanation_visualizer import get_causal_explanation
 
 st.set_page_config(page_title="CauSumX UI", layout="wide")
@@ -73,11 +72,6 @@ def main():
         if not query_input:
             st.error("Please enter a valid SQL GROUP-BY query.")
         else:
-            if selected_dataset == "Uploaded Dataset":
-                causumx = CauSumX("uploaded")
-            else:
-                causumx = CauSumX(selected_dataset)
-
             if True:
                 dot_graph = get_causal_explanation(query_input, size_constraint)
                 col1, col2 = st.columns(2)
