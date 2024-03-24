@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import time
 
-from ui.explanation_visualizer import get_causal_explanation
+from explanation_visualizer import get_causal_explanation
 
 st.set_page_config(page_title="CauSumX UI", layout="wide")
 
