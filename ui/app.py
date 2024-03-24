@@ -3,6 +3,7 @@ import altair as alt
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import os
 import time
 
 from explanation_visualizer import get_causal_explanation
@@ -30,7 +31,9 @@ def main():
 
     st.markdown("#### A UI for Explaining the Causes of Aggregate SQL Queries Results")
 
-    data = pd.read_csv('data/so_countries_col_new.csv')
+    # get the path of the data file by using the current working directory
+
+    data = pd.read_csv(os.path.join(os.path.dirname(__file__), 'data', 'so_countries_col_new.csv'))
 
     st.sidebar.header('1. Upload Your Data')
     uploaded_dataset = st.sidebar.file_uploader("Upload a dataset CSV file", type=['csv'])
