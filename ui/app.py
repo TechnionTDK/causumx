@@ -27,6 +27,7 @@ def plot_bar_chart(countries, values):
 
 def main():
     st.title('✨ CauSumX UI')
+
     st.markdown("#### A UI for Explaining the Causes of Aggregate SQL Queries Results")
 
     data = pd.read_csv('data/so_countries_col_new.csv')
