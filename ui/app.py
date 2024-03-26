@@ -5,11 +5,20 @@ import numpy as np
 import pandas as pd
 import os
 import time
+import pycountry
 
 from explanation_visualizer import get_causal_explanation
 
 st.set_page_config(page_title="CauSumX UI", layout="wide")
 
+def country_name_to_code(name):
+    try:
+        return pycountry.countries.lookup(name).alpha_2
+    except LookupError:
+        print(f"Country not found: {name}")
+        if name == 'Turkey':
+            return "TR"
+        return 'Unknown'
 
 def plot_bar_chart(countries, values):
     # Generate a color for each country
@@ -36,13 +45,16 @@ def main():
     data = pd.read_csv(os.path.join(os.path.dirname(__file__), 'data', 'so_countries_col_new.csv'))
 
     st.sidebar.header('1. Upload Your Data')
-    uploaded_dataset = st.sidebar.file_uploader("Upload a dataset CSV file", type=['csv'])
-    uploaded_dag = st.sidebar.file_uploader("Upload a DAG DOT file", type=['dot'])
+    # uploaded_dataset = st.sidebar.file_uploader("Upload a dataset CSV file", type=['csv'])
+    # uploaded_dag = st.sidebar.file_uploader("Upload a DAG DOT file", type=['dot'])
+    upload_dataset_button = st.sidebar.button('📂 Upload Dataset')
+    upload_dag_button = st.sidebar.button('🔷 Upload DAG')
+    find_causal_dag_button = st.sidebar.button('✨ Find Causal DAG')
 
-    if uploaded_dataset is not None and uploaded_dag is not None:
-        # Display the name of the uploaded files (optional)
-        st.write("Uploaded dataset:", uploaded_dataset.name)
-        st.write("Uploaded DAG:", uploaded_dag.name)
+    # if uploaded_dataset is not None and uploaded_dag is not None:
+    #     # Display the name of the uploaded files (optional)
+    #     st.write("Uploaded dataset:", uploaded_dataset.name)
+    #     st.write("Uploaded DAG:", uploaded_dag.name)
 
     st.sidebar.header('Or Select a Preloaded Dataset')
     dataset_options_with_explanations = load_dataset_options()
@@ -60,6 +72,7 @@ def main():
     # query_input = st.sidebar.text_area("Enter GROUP-BY SQL Query", value=default_query, height=150)
     size_constraint = st.sidebar.slider("Constraint on Explanation's Size", min_value=1, max_value=10, value=3)
     positive_or_negative = st.sidebar.radio("Causality Direction", ["Both", "Positive", "Negative"])
+    coverage_constraint = st.sidebar.slider("Coverage Constraint", min_value=0.0, max_value=1.0, value=0.75)
 
     execute_button = st.sidebar.button('Execute Query')
 
@@ -129,18 +142,21 @@ def main():
                     </style>
                     """
 
-                    tooltip_html += f"""<p>1️⃣ For countries in {europe_tooltip}, the most substantial effect on high salaries (effect size of 36K, 𝑝 < 1e-3) is observed for individuals under 35 with a Master’s degree. 
-                    Conversely, being a student has the greatest adverse impact on annual income (effect size: -39K, 𝑝 < 1e-3).</p>"""
+                    # tooltip_html += f"""<p>1️⃣ For countries in {europe_tooltip}, the most substantial effect on high salaries (effect size of 36K, 𝑝 < 1e-3) is observed for individuals under 35 with a Master’s degree.
+                    # Conversely, being a student has the greatest adverse impact on annual income (effect size: -39K, 𝑝 < 1e-3).</p>"""
+
+                    tooltip_html += f"""<p>1️⃣ For countries in {europe_tooltip}, the most substantial effect on high salaries (effect size of 36K) is observed for individuals under 35 with a Master’s degree.</p>"""
 
                     high_GDP_level_tooltip = f"""<span class="tooltip" style="background-color: blue;">high GDP level<span class="tooltiptext">{records_from_high_GDP_countries} records</span></span>"""
 
-                    tooltip_html += f"""<p>2️⃣ For countries with a {high_GDP_level_tooltip}, the most substantial effect on high salaries (effect size of 41K, 𝑝 < 1e-3 ) is observed for C-level executives. 
-                    Conversely, being over 55 with a bachelor’s degree has the greatest adverse impact on annual income (effect size: -35K,𝑝 < 1e-4).</p>"""
+                    # tooltip_html += f"""<p>2️⃣ For countries with a {high_GDP_level_tooltip}, the most substantial effect on high salaries (effect size of 41K, 𝑝 < 1e-3 ) is observed for C-level executives.
+                    # Conversely, being over 55 with a bachelor’s degree has the greatest adverse impact on annual income (effect size: -35K,𝑝 < 1e-4).</p>"""
+
+                    tooltip_html += f"""<p>2️⃣ For countries with a {high_GDP_level_tooltip}, the most substantial effect on high salaries (effect size of 41K) is observed for C-level executives.</p>"""
 
                     high_Gini_coefficient_tooltip = f"""<span class="tooltip" style="background-color: purple;">high Gini coefficient<span class="tooltiptext">{records_from_high_Gini_countries} records</span></span>"""
 
-                    tooltip_html += f"""<p>3️⃣ For countries with a {high_Gini_coefficient_tooltip}, the most substantial effect on high salaries (effect size of 29K, 𝑝 < 1e-4) is observed for white individuals under 45. 
-                    Conversely, being having no formal degree has the greatest adverse impact on annual income (effect size: -28K, 𝑝 < 1e-3).</p>"""
+                    tooltip_html += f"""<p>3️⃣ For countries with a {high_Gini_coefficient_tooltip}, the most substantial effect on high salaries (effect size of 29K) is observed for white individuals under 45.</p>"""
 
                     st.markdown(tooltip_html, unsafe_allow_html=True)
 
@@ -179,8 +195,13 @@ def main():
                     income_color_scale = alt.Scale(domain=['High GDP', 'EU', 'High GINI', 'Other'],
                                                    range=['blue', 'red', 'purple', 'gray'])
 
+                    # change the names of the countries. For example: change United States to US, United Kingdom to UK, etc. Use an external module for that.
+
+                    data['Country'] = data['Country'].apply(country_name_to_code)
+
                     chart = alt.Chart(data).mark_bar().encode(
-                        x=alt.X('Country:N', sort=alt.SortField('ConvertedSalary', order='descending')),
+                        x=alt.X('Country:N', sort=alt.SortField('ConvertedSalary', order='descending'),
+                                axis=alt.Axis(labelFontWeight='bold', labelFontSize=15, labelColor='black')),
                         y='ConvertedSalary:Q',
                         color=alt.Color('Category:N', scale=income_color_scale,
                                         legend=alt.Legend(title="Income Level")),

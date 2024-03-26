@@ -99,8 +99,7 @@ def get_causal_explanation(query, constraint, start='Continent', end='ConvertedS
     #     else:
     #         dot.node(item.strip())
 
-    dot = Digraph(comment='The Research DAG')
-
+    dot = Digraph(comment='The Research DAG', node_attr={'fontname': 'Helvetica-bold', 'fontsize': '9'})
     # Add nodes and edges to the graph
     for item in dag:
         if '->' in item:
