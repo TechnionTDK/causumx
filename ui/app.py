@@ -71,7 +71,7 @@ def main():
     query_input = st.sidebar.code(default_query, language='sql')
     # query_input = st.sidebar.text_area("Enter GROUP-BY SQL Query", value=default_query, height=150)
     size_constraint = st.sidebar.slider("Constraint on Explanation's Size", min_value=1, max_value=10, value=3)
-    positive_or_negative = st.sidebar.radio("Causality Direction", ["Both", "Positive", "Negative"])
+    positive_or_negative = st.sidebar.radio("Causality Direction", ["Both", "Positive", "Negative"], index=1)
     coverage_constraint = st.sidebar.slider("Coverage Constraint", min_value=0.0, max_value=1.0, value=0.75)
 
     execute_button = st.sidebar.button('Execute Query')
@@ -90,6 +90,7 @@ def main():
             st.error("Please enter a valid SQL GROUP-BY query.")
         else:
             if True:
+                # dot_graph = get_causal_explanation(query_input, size_constraint)
                 dot_graph = get_causal_explanation(query_input, size_constraint)
                 col1, col2 = st.columns(2)
 
@@ -188,11 +189,11 @@ def main():
                         elif country in high_gini_countries:
                             return 'High GINI'
                         else:
-                            return 'Other'
+                            return 'Uncovered'
 
                     data['Category'] = data['Country'].apply(income_category)
 
-                    income_color_scale = alt.Scale(domain=['High GDP', 'EU', 'High GINI', 'Other'],
+                    income_color_scale = alt.Scale(domain=['High GDP', 'EU', 'High GINI', 'Uncovered'],
                                                    range=['blue', 'red', 'purple', 'gray'])
 
                     # change the names of the countries. For example: change United States to US, United Kingdom to UK, etc. Use an external module for that.
@@ -213,15 +214,18 @@ def main():
                     st.markdown("### 🔷 Graphs")
                     tab1, tab2, tab3 = st.tabs(["Insight 1", "Insight 2", "Insight 3"])
                     with tab1:
-                        st.graphviz_chart(dot_graph, use_container_width=True)
+                        # st.graphviz_chart(dot_graph, use_container_width=True)
+                        st.pyplot(dot_graph)
 
                     # Display Graph 2 in Tab 2
                     with tab2:
-                        st.graphviz_chart(get_causal_explanation(None, None, start="FormalEducation", end="ConvertedSalary", color='red'), use_container_width=True)
+                        st.write("Insight 2")
+                        # st.graphviz_chart(get_causal_explanation(None, None, start="FormalEducation", end="ConvertedSalary", color='red'), use_container_width=True)
 
                     # Display Graph 3 in Tab 3
                     with tab3:
-                        st.graphviz_chart(get_causal_explanation(None, None, start="Age", end="ConvertedSalary", color='purple'), use_container_width=True)
+                        st.write("Insight 3")
+                        # st.graphviz_chart(get_causal_explanation(None, None, start="Age", end="ConvertedSalary", color='purple'), use_container_width=True)
 
 
             else:
