@@ -75,7 +75,6 @@ def main():
     coverage_constraint = st.sidebar.slider("Coverage Constraint", min_value=0.0, max_value=1.0, value=0.75)
 
     execute_button = st.sidebar.button('Execute Query')
-
     if True:
 
         # progress_text = "Running CauSumX... 🏃‍"
