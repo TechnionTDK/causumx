@@ -90,7 +90,7 @@ def main():
         else:
             if True:
                 # dot_graph = get_causal_explanation(query_input, size_constraint)
-                dot_graph = get_causal_explanation(query_input, size_constraint)
+                dot_graph = get_causal_explanation()
                 col1, col2 = st.columns(2)
 
                 with col1:
@@ -213,8 +213,12 @@ def main():
                     st.markdown("### 🔷 Graphs")
                     tab1, tab2, tab3 = st.tabs(["Insight 1", "Insight 2", "Insight 3"])
                     with tab1:
-                        # st.graphviz_chart(dot_graph, use_container_width=True)
-                        st.pyplot(dot_graph)
+                        st.graphviz_chart(dot_graph, use_container_width=True)
+
+                        # present the image at path 'dot_graph' in the tab
+                        # st.image('ui/causal_dag.png', use_column_width=True)
+
+                        # st.pyplot(dot_graph)
 
                     # Display Graph 2 in Tab 2
                     with tab2:
