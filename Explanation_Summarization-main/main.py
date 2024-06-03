@@ -61,8 +61,8 @@ def so(k, tau):
    targetClass = 'ConvertedSalary'
    groupingAtt = 'Country'
    fds = ['Country', 'GDP', 'HDI', 'GINI', 'Continent']
-   CauSumX.cauSumX(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
-           print_times=True)
+   print(CauSumX.cauSumX(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
+           print_times=True))
 
 def main():
    k = 3

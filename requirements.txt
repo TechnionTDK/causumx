@@ -9,3 +9,4 @@ pycountry
 apyori
 dowhy
 z3-solver
+mlxtend

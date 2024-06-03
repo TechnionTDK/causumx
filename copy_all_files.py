@@ -4,6 +4,7 @@ import pyperclip
 
 FILES_TO_EXCLUDE = [
     'XInsight_result_so.json',
+    'Temp.csv',
     'so_countries_col_new_full.csv',
     'environment.yml', 'environment_2.yml', 'Start_here.txt', '.idea', '.git',
     '.DS_Store', '.gitignore', 'fastmri-reproducible-benchmark-master', 'zip',
