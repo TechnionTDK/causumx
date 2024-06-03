@@ -42,7 +42,7 @@ def main():
 
     # get the path of the data file by using the current working directory
 
-    data = pd.read_csv(os.path.join(os.path.dirname(__file__), 'data', 'so_countries_col_new.csv'))
+    data = pd.read_csv(os.path.join(os.path.dirname(__file__), 'data', 'so_countries_col_new_full.csv'))
 
     st.sidebar.header('1. Upload Your Data')
     # uploaded_dataset = st.sidebar.file_uploader("Upload a dataset CSV file", type=['csv'])

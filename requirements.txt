@@ -6,3 +6,6 @@ graphviz
 requests
 networkx
 pycountry
+apyori
+dowhy
+z3-solver
