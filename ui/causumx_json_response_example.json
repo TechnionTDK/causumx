@@ -1,0 +1,173 @@
+{
+  "initial_group_count": 75,
+  "filtered_group_count": 11,
+  "step_1_time": 13.509053945541382,
+  "step_2_time": 14.847630262374878,
+  "target_class": "ConvertedSalary",
+  "solution_details": [
+    {
+      "group": "{'Country': 'United States'}",
+      "details": {
+        "size": 12941,
+        "covered": [
+          "United States"
+        ],
+        "t_h": {
+          "Gender": "Male"
+        },
+        "cate_h": 25400.232647183497,
+        "t_l": {
+          "Age": "18 - 24 years old"
+        },
+        "cate_l": -30018.79791893765,
+        "explainability": 55419.030566121146
+      }
+    },
+    {
+      "group": "{'Continent': 'EU'}",
+      "details": {
+        "size": 15921,
+        "covered": [
+          "Austria",
+          "Switzerland",
+          "France",
+          "Netherlands",
+          "Poland",
+          "Spain",
+          "Sweden",
+          "Italy",
+          "Ukraine",
+          "Germany",
+          "Belgium",
+          "United Kingdom",
+          "Russian Federation"
+        ],
+        "t_h": {
+          "Age": "35 - 44 years old"
+        },
+        "cate_h": 37826.77730048106,
+        "t_l": {
+          "Age": "18 - 24 years old"
+        },
+        "cate_l": -46248.73279141989,
+        "explainability": 84075.51009190094
+      }
+    },
+    {
+      "group": "{'GINI': 'Medium'}",
+      "details": {
+        "size": 14429,
+        "covered": [
+          "France",
+          "Poland",
+          "Spain",
+          "Italy",
+          "Australia",
+          "Germany",
+          "Canada",
+          "United Kingdom"
+        ],
+        "t_h": {
+          "Age": "35 - 44 years old"
+        },
+        "cate_h": 34809.474602845294,
+        "t_l": {
+          "Age": "18 - 24 years old"
+        },
+        "cate_l": -43843.58799401115,
+        "explainability": 78653.06259685644
+      }
+    },
+    {
+      "group": "{'GDP': 'Medium'}",
+      "details": {
+        "size": 16944,
+        "covered": [
+          "Austria",
+          "Switzerland",
+          "France",
+          "Israel",
+          "Netherlands",
+          "Sweden",
+          "Spain",
+          "Italy",
+          "Australia",
+          "Belgium",
+          "Germany",
+          "Canada",
+          "United Kingdom"
+        ],
+        "t_h": {
+          "Age": "35 - 44 years old"
+        },
+        "cate_h": 31349.809879837296,
+        "t_l": {
+          "Age": "18 - 24 years old"
+        },
+        "cate_l": -44668.45197284476,
+        "explainability": 76018.26185268206
+      }
+    },
+    {
+      "group": "{'GINI': 'High'}",
+      "details": {
+        "size": 20653,
+        "covered": [
+          "India",
+          "Israel",
+          "Brazil",
+          "United States",
+          "Turkey",
+          "Ukraine",
+          "Russian Federation"
+        ],
+        "t_h": {
+          "Age": "35 - 44 years old"
+        },
+        "cate_h": 38620.69477342219,
+        "t_l": {
+          "RaceEthnicity": "South Asian"
+        },
+        "cate_l": -58763.74328511446,
+        "explainability": 97384.43805853665
+      }
+    },
+    {
+      "group": "{'HDI': 'High'}",
+      "details": {
+        "size": 29885,
+        "covered": [
+          "Austria",
+          "Switzerland",
+          "France",
+          "Israel",
+          "Netherlands",
+          "Sweden",
+          "Spain",
+          "Italy",
+          "United States",
+          "Australia",
+          "Belgium",
+          "Germany",
+          "Canada",
+          "United Kingdom"
+        ],
+        "t_h": {
+          "Age": "35 - 44 years old"
+        },
+        "cate_h": 23179.976434380806,
+        "t_l": {
+          "Age": "18 - 24 years old"
+        },
+        "cate_l": -41697.41434719495,
+        "explainability": 64877.390781575756
+      }
+    }
+  ],
+  "overall_explainability": 456427.693947673,
+  "coverage": 1,
+  "total_groups": 20,
+  "total_groups_in_aggregated_view": 20,
+  "step_3_time": 0.016002178192138672,
+  "total_time": 28.3726863861084
+}

@@ -10,3 +10,5 @@ apyori
 dowhy
 z3-solver
 mlxtend
+openai
+python-dotenv

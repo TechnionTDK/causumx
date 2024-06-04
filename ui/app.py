@@ -1,13 +1,12 @@
+import os
 import streamlit as st
 import altair as alt
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import os
-import time
 import pycountry
 
-from explanation_visualizer import get_causal_explanation
+from case_study import so, german
 
 st.set_page_config(page_title="CauSumX UI", layout="wide")
 
@@ -58,6 +57,7 @@ def main():
 
     st.sidebar.header('Or Select a Preloaded Dataset')
     dataset_options_with_explanations = load_dataset_options()
+
     selected_dataset = st.sidebar.selectbox(
         "Select Dataset",
         options=list(dataset_options_with_explanations.keys()),
@@ -67,30 +67,37 @@ def main():
 
     # Default GROUP-BY SQL query for demo
     st.sidebar.header('2. Enter Your Query')
-    default_query = ("SELECT Country, AVG(Salary)\nFROM Stack-Overflow\nGROUP BY Country")
-    query_input = st.sidebar.code(default_query, language='sql')
-    # query_input = st.sidebar.text_area("Enter GROUP-BY SQL Query", value=default_query, height=150)
+
+    causumx_result = dataset_options_with_explanations[selected_dataset]["SQL"]
+    query_input = st.sidebar.code(causumx_result, language='sql')
+    # query_input = st.sidebar.text_area("Enter GROUP-BY SQL Query", value=causumx_result, height=150)
     size_constraint = st.sidebar.slider("Constraint on Explanation's Size", min_value=1, max_value=10, value=3)
     positive_or_negative = st.sidebar.radio("Causality Direction", ["Both", "Positive", "Negative"], index=1)
     coverage_constraint = st.sidebar.slider("Coverage Constraint", min_value=0.0, max_value=1.0, value=0.75)
 
     execute_button = st.sidebar.button('Execute Query')
     if True:
-
-        # progress_text = "Running CauSumX... 🏃‍"
-        # my_bar = st.progress(0, text=progress_text)
-        #
-        # for percent_complete in range(100):
-        #     time.sleep(0.01)
-        #     my_bar.progress(percent_complete + 1, text=progress_text)
-        # time.sleep(1)
-        # my_bar.empty()
         if not query_input:
             st.error("Please enter a valid SQL GROUP-BY query.")
         else:
             if True:
-                # dot_graph = get_causal_explanation(query_input, size_constraint)
-                dot_graph = get_causal_explanation()
+                # progress_text = "Running CauSumX... 🏃‍"
+                # my_bar = st.progress(0, text=progress_text)
+                #
+                # for percent_complete in range(100):
+                #     time.sleep(0.01)
+                #     my_bar.progress(percent_complete + 1, text=progress_text)
+                # my_bar.empty()
+
+                # TODO: what is this??
+                tau = 0.75
+                causumx_result = dataset_options_with_explanations[selected_dataset]["function"](k=coverage_constraint, tau=tau)
+
+                # my_bar.empty()
+
+                st.json(causumx_result)
+
+                # dot_graph = get_causal_explanation()
                 col1, col2 = st.columns(2)
 
                 with col1:
@@ -209,27 +216,26 @@ def main():
 
                     st.altair_chart(chart, use_container_width=True)
 
-                with col2:
-                    st.markdown("### 🔷 Graphs")
-                    tab1, tab2, tab3 = st.tabs(["Insight 1", "Insight 2", "Insight 3"])
-                    with tab1:
-                        st.graphviz_chart(dot_graph, use_container_width=True)
-
-                        # present the image at path 'dot_graph' in the tab
-                        # st.image('ui/causal_dag.png', use_column_width=True)
-
-                        # st.pyplot(dot_graph)
-
-                    # Display Graph 2 in Tab 2
-                    with tab2:
-                        st.write("Insight 2")
-                        # st.graphviz_chart(get_causal_explanation(None, None, start="FormalEducation", end="ConvertedSalary", color='red'), use_container_width=True)
-
-                    # Display Graph 3 in Tab 3
-                    with tab3:
-                        st.write("Insight 3")
-                        # st.graphviz_chart(get_causal_explanation(None, None, start="Age", end="ConvertedSalary", color='purple'), use_container_width=True)
-
+                # with col2:
+                #     st.markdown("### 🔷 Graphs")
+                #     tab1, tab2, tab3 = st.tabs(["Insight 1", "Insight 2", "Insight 3"])
+                #     with tab1:
+                #         st.graphviz_chart(dot_graph, use_container_width=True)
+                #
+                #         # present the image at path 'dot_graph' in the tab
+                #         # st.image('ui/causal_dag.png', use_column_width=True)
+                #
+                #         # st.pyplot(dot_graph)
+                #
+                #     # Display Graph 2 in Tab 2
+                #     with tab2:
+                #         st.write("Insight 2")
+                #         # st.graphviz_chart(get_causal_explanation(None, None, start="FormalEducation", end="ConvertedSalary", color='red'), use_container_width=True)
+                #
+                #     # Display Graph 3 in Tab 3
+                #     with tab3:
+                #         st.write("Insight 3")
+                #         # st.graphviz_chart(get_causal_explanation(None, None, start="Age", end="ConvertedSalary", color='purple'), use_container_width=True)
 
             else:
                 st.error("Failed to generate an explanation. Please check the query and try again.")
@@ -237,9 +243,21 @@ def main():
 
 def load_dataset_options():
     datasets_with_explanations = {
-        "Stack-Overflow": "Derived from Stack Overflow, this dataset includes data on posts, comments, votes, and more, ideal for analyzing software development trends.",
-        "Adults": "The Adult Income dataset contains demographic and employment information from the 1994 U.S. Census database, aimed at predicting if an individual's income exceeds $50K/year.",
-        "Countries": "The German Credit Data classifies individuals as good or bad credit risks based on several attributes, used commonly in credit scoring models.",
+        "Stack Overflow":
+            {
+            "description": "Derived from Stack Overflow, this dataset includes data on posts, comments, votes, and more, ideal for analyzing software development trends.",
+            "SQL": "SELECT Country, AVG(Salary)\nFROM Stack-Overflow\nGROUP BY Country",
+                "function": so
+        },
+        "German":
+            {
+
+                "description": "The German Credit Data classifies individuals as good or bad credit risks based on several attributes, used commonly in credit scoring models.",
+                "SQL": "SELECT purpose, AVG(credit_risk)\nFROM German\nGROUP BY purpose",
+                "function": german
+            },
+        "Accidents": "The Accidents dataset contains information about road accidents, including the severity of the accident and contributing factors.",
+        "Adults": "The Adult dataset contains demographic information about adults, including age, education, and income.",
     }
     return datasets_with_explanations
 
