@@ -1,4 +1,4 @@
 .idea/
 tests/
 .env
-ui/__pycache__/
+ui/__pycache__/.env
