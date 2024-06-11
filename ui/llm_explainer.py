@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 def causumx_output_to_natural_language_explanation(causumx_output):
-    explanation = "💬 Causal Explanation\n"
+    insights = []
 
     solution_details = causumx_output["solution_details"]
     for i, detail in enumerate(solution_details):
@@ -25,9 +25,17 @@ def causumx_output_to_natural_language_explanation(causumx_output):
         explainability = detail["details"]["explainability"]
         target_class = causumx_output["target_class"]
 
-        explanation += f"{i + 1}️⃣ For the group defined by {group_key}: '{group_value}', the most substantial effect on {target_class} (effect size of {cate_h:.2f}) is observed for {t_h_key}: '{t_h_value}', while the most substantial negative effect (effect size of {cate_l:.2f}) is observed for {t_l_key}: '{t_l_value}'.\n"
+        def format_number(n):
+            """Format the number as 10K instead of 10000."""
+            if abs(n) >= 1000:
+                return f"{n / 1000:.1f}K"
+            return str(n)
 
-    # {'insight_1': 'In the United States, males have the most substantial positive effect on ConvertedSalary with an effect size of 25400.23, whereas individuals aged 18 - 24 years old have the most substantial negative effect with an effect size of -30018.80.', 'insight_2': 'In the EU, individuals aged 35 - 44 years old have the most substantial positive effect on ConvertedSalary with an effect size of 37826.78, while those aged 18 - 24 years old have the most substantial negative effect with an effect size of -46248.73.', 'insight_3': 'For regions with a medium GINI index, individuals aged 35 - 44 years old have the most substantial positive effect on ConvertedSalary with an effect size of 34809.47, while those aged 18 - 24 years old have the most substantial negative effect with an effect size of -43843.59.', 'insight_4': 'In regions with a medium GDP, individuals aged 35 - 44 years old have the most substantial positive effect on ConvertedSalary with an effect size of 31349.81, whereas those aged 18 - 24 years old have the most substantial negative effect with an effect size of -44668.45.', 'insight_5': 'For regions with a high GINI index, individuals aged 35 - 44 years old have the most substantial positive effect on ConvertedSalary with an effect size of 38620.69, while South Asians have the most substantial negative effect with an effect size of -58763.74.', 'insight_6': 'In regions with a high HDI, individuals aged 35 - 44 years old have the most substantial positive effect on ConvertedSalary with an effect size of 23179.98, whereas those aged 18 - 24 years old have the most substantial negative effect with an effect size of -41697.41.'}
+        insights.append(
+            f"{i + 1}️⃣ For the group defined by {group_key}: '{group_value}', the most substantial positive effect on {target_class} (effect size of {format_number(cate_h)}) is observed for {t_h_key}: {t_h_value}, while the most substantial negative effect (effect size of {format_number(cate_l)}) is observed for {t_l_key}: {t_l_value}.\n")
+
+
+    return insights
 
     client = OpenAI()
 

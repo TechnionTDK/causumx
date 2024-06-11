@@ -14,8 +14,76 @@ dirname = os.path.dirname(__file__)
 PATH = os.path.join(dirname, "data/")
 APRIORI = 0.1
 
+SO_DAG = [
+    'Continent',
+    'HoursComputer',
+    'UndergradMajor',
+    'FormalEducation',
+    'Age',
+    'Gender',
+    'Dependents',
+    'Country',
+    'DevType',
+    'RaceEthnicity',
+    'ConvertedSalary',
+    'HDI',
+    'GINI',
+    'GDP',
+    'HDI -> GINI',
+    'GINI -> ConvertedSalary',
+    'GINI -> GDP',
+    'GDP -> ConvertedSalary',
+    'Gender -> FormalEducation',
+    'Gender -> UndergradMajor',
+    'Gender -> DevType',
+    'Gender -> ConvertedSalary',
+    'Country -> ConvertedSalary',
+    'Country -> FormalEducation',
+    'Country -> RaceEthnicity',
+    'Continent -> Country ',
+
+    'FormalEducation -> DevType',
+    'FormalEducation -> UndergradMajor',
+
+    'Continent -> UndergradMajor',
+    'Continent -> FormalEducation',
+    'Continent -> RaceEthnicity',
+    'Continent -> ConvertedSalary',
+
+    'RaceEthnicity -> ConvertedSalary',
+    'UndergradMajor -> DevType',
+
+    'DevType -> ConvertedSalary',
+    'DevType -> HoursComputer',
+    'Age -> ConvertedSalary',
+    'Age -> DevType',
+    'Age -> Dependents',
+    'Age -> FormalEducation',
+
+    'Dependents -> HoursComputer',
+    'HoursComputer -> ConvertedSalary',]
+
+GERMAN_DAG =  ['status','duration','credit_history','purpose','amount','savings',
+        'employment_duration','installment_rate','personal_status_sex','other_debtors',
+        'present_residence','property','age','other_installment_plans','housing','number_credits',
+        'job','people_liable','telephone','foreign_worker','credit_risk',
+        'personal_status_sex -> credit_risk','personal_status_sex -> housing',
+        'personal_status_sex -> savings','personal_status_sex -> status',
+        'personal_status_sex -> credit_history','personal_status_sex -> duration',
+        'personal_status_sex -> amount','housing -> credit_risk',
+        'savings -> credit_risk','status -> credit_risk',
+        'duration -> credit_risk','credit_history -> credit_risk',
+        'amount -> credit_risk','age -> credit_risk',
+        'age -> housing','age -> credit_history',
+        'age -> savings','age -> status',
+        'age -> duration','age -> amount']
 
 def so(k, tau):
+    """
+    :param k: coverage constraint
+    :param tau:
+    :return:
+    """
     #########################SO#####################
     'Hobby', 'Student',
     'FormalEducation', 'UndergradMajor', 'DevType', 'HoursComputer',
@@ -24,54 +92,6 @@ def so(k, tau):
        'Gender', 'SexualOrientation', 'EducationParents', 'RaceEthnicity',
     'Age'
     ]
-    DAG = [
-        'Continent;',
-        'HoursComputer;',
-        'UndergradMajor;',
-        'FormalEducation;',
-        'Age;',
-        'Gender;',
-        'Dependents;',
-        'Country;',
-        'DevType;',
-        'RaceEthnicity;',
-        'ConvertedSalary;',
-        'HDI;',
-        'GINI;',
-        'GDP;',
-        'HDI -> GINI;',
-        'GINI -> ConvertedSalary;',
-        'GINI -> GDP;',
-        'GDP -> ConvertedSalary;',
-        'Gender -> FormalEducation;',
-        'Gender -> UndergradMajor;',
-        'Gender -> DevType;',
-        'Gender -> ConvertedSalary;',
-        'Country -> ConvertedSalary;',
-        'Country -> FormalEducation;',
-        'Country -> RaceEthnicity;',
-        'Continent -> Country; '
-    
-        'FormalEducation -> DevType;',
-        'FormalEducation -> UndergradMajor;',
-
-        'Continent -> UndergradMajor',
-        'Continent -> FormalEducation;',
-        'Continent -> RaceEthnicity;',
-        'Continent -> ConvertedSalary;',
-
-        'RaceEthnicity -> ConvertedSalary;',
-        'UndergradMajor -> DevType;',
-
-        'DevType -> ConvertedSalary;',
-        'DevType -> HoursComputer;',
-        'Age -> ConvertedSalary;',
-        'Age -> DevType;',
-        'Age -> Dependents;',
-        'Age -> FormalEducation;',
-
-        'Dependents -> HoursComputer;',
-        'HoursComputer -> ConvertedSalary;']
 
     df = pd.read_csv(PATH + 'so_countries_col_new.csv', encoding='utf8')
     ordinal_atts = {}
@@ -81,7 +101,7 @@ def so(k, tau):
     #print(set(df['Continent'].tolist()))
     # CPE.CPE(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
     #         print_times=True)
-    return CauSumX.cauSumX(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
+    return CauSumX.cauSumX(df, SO_DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
                     print_times=True)
 
 
@@ -92,27 +112,16 @@ def german(k,tau):
        'personal_status_sex', 'other_debtors', 'present_residence', 'property',
        'age', 'other_installment_plans', 'housing', 'number_credits', 'job',
        'people_liable', 'telephone', 'foreign_worker']
-    DAG = ['status;','duration;','credit_history;','purpose;','amount;','savings;',
-        'employment_duration;','installment_rate;','personal_status_sex;','other_debtors;',
-        'present_residence;','property;','age;','other_installment_plans;','housing;','number_credits;',
-        'job;','people_liable;','telephone;','foreign_worker;','credit_risk;',
-        'personal_status_sex -> credit_risk;','personal_status_sex -> housing;',
-        'personal_status_sex -> savings;','personal_status_sex -> status;',
-        'personal_status_sex -> credit_history;','personal_status_sex -> duration;',
-        'personal_status_sex -> amount;','housing -> credit_risk;',
-        'savings -> credit_risk;','status -> credit_risk;',
-        'duration -> credit_risk;','credit_history -> credit_risk;',
-        'amount -> credit_risk;','age -> credit_risk;',
-        'age -> housing;','age -> credit_history;',
-        'age -> savings;','age -> status;',
-        'age -> duration;','age -> amount;']
+
 
     df = pd.read_csv(PATH + 'german_credit_data_new.csv', encoding='utf8')
     ordinal_atts = {}
     targetClass = 'credit_risk'
     groupingAtt = 'purpose'
     fds = ['purpose']
-    CPE.CPE(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
+    # CPE.CPE(df, GERMAN_DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
+    #         print_times=True)
+    return CauSumX.cauSumX(df, GERMAN_DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
             print_times=True)
 
 
