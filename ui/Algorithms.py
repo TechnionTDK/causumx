@@ -164,22 +164,23 @@ def getHighLowTreatments(df_g, group, target,DAG, dropAtt, ordinal_atts, high, l
     return (t_h, cate_h), (t_l, cate_l)
 
 
-def filter_above_below_median(data):
-    # Extract the values from the dictionary
-    values = list(data.values())
+def filter_above_below_median(treatments_cate):
+    # print(f"treatments_cate: {treatments_cate}")
 
-    # Separate positive and negative values
-    positive_values = [value for value in values if value > 0]
-    negative_values = [value for value in values if value < 0]
+    positive_values = [value for value in treatments_cate.values() if value > 0]
+    negative_values = [value for value in treatments_cate.values() if value < 0]
 
-    # Calculate the positive median and negative median
     positive_median = statistics.median(positive_values) if positive_values else None
     negative_median = statistics.median(negative_values) if negative_values else None
 
-    # Filter the dictionary entries
-    filtered_data = {key: value for key, value in data.items()
-                     if (value > positive_median and value > 0) or (value < negative_median and value < 0)}
+    # print(f"positive_median: {positive_median}, negative_median: {negative_median}")
 
-    return filtered_data
+    filtered = {treatment: value for treatment, value in treatments_cate.items()
+                if ((positive_median is not None and value > positive_median and value > 0) or
+                    (negative_median is not None and value < negative_median and value < 0))}
+
+    # print(f"filtered treatments_cate: {filtered}")
+
+    return filtered
 
 

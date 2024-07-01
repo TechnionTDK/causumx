@@ -11,7 +11,7 @@ import re
 import plotly.express as px
 
 
-from case_study import so, german, SO_DAG, GERMAN_DAG
+from case_study import so, german, SO_DAG, GERMAN_DAG, ADULT_DAG, adult
 from llm_explainer import causumx_output_to_natural_language_explanation
 from ui.explanation_visualizer import get_causal_explanation
 
@@ -86,6 +86,12 @@ def main():
     uploaded_dataset = st.sidebar.file_uploader("Upload a dataset CSV file", type=['csv'])
     uploaded_dag = st.sidebar.file_uploader("Upload a DAG (dot file)", type=['dot'])
 
+    st.sidebar.markdown("Or:")
+    button_for_dag = st.sidebar.button('Run Causal Discovery Algorithm')
+
+    # actionable_atts input. THis should be (all attributes by default)
+    actionable_atts = st.sidebar.text_area("Enter Actionable Attributes (comma-separated). Leave blank for all attributes.")
+
     st.sidebar.subheader('Or Select a Preloaded Dataset')
     dataset_options_with_explanations = load_dataset_options()
 
@@ -112,9 +118,9 @@ def main():
 
         # query_input = st.sidebar.code(causumx_result, language='sql')
         query_input = st.sidebar.text_area("Enter GROUP-BY SQL Query", value=sql_query, height=100)
-        size_constraint = st.sidebar.slider("Constraint on Explanation's Size", min_value=1, max_value=10, value=6)
+        size_constraint = st.sidebar.slider("Constraint on Explanation's Size", min_value=1, max_value=10, value=2)
         positive_or_negative = st.sidebar.radio("Causality Direction", ["Both", "Positive", "Negative"], index=1)
-        coverage_constraint = st.sidebar.slider("Coverage Constraint", min_value=0.0, max_value=1.0, value=0.50)
+        coverage_constraint = st.sidebar.slider("Coverage Constraint", min_value=0.0, max_value=1.0, value=0.20)
 
 
         # extract the value insite the AVG (example: SELECT Country, AVG(ConvertedSalary)
@@ -159,9 +165,8 @@ def main():
                     #     time.sleep(0.01)
                     #     my_bar.progress(percent_complete + 1, text=progress_text)
 
-                    causumx_result = dataset_options_with_explanations[selected_dataset]["function"](k=size_constraint, tau=coverage_constraint)
-
-                    print(causumx_result)
+                    dag = dataset_options_with_explanations[selected_dataset]["dag"]
+                    # causumx_result = dataset_options_with_explanations[selected_dataset]["function"](k=size_constraint, tau=coverage_constraint)
 
                     my_bar.empty()
 
@@ -171,15 +176,23 @@ def main():
                     with col1:
                         st.markdown("### 💬 Causal Explanation")
 
+                        # check if causumx_result contains the key "solution_details"
+                        # if so, the explanation was generated successfully
+                        # otherwise, display an error message
+
                         script_path = os.path.realpath(__file__)
                         script_directory = os.path.dirname(script_path)
-                        # filename = "causumx_json_response_example.json"
-                        # full_path = os.path.join(script_directory, filename)
-                        # causumx_result = json.load(open(full_path))
+                        filename = "causumx_json_response_example.json"
+                        full_path = os.path.join(script_directory, filename)
+                        causumx_result = json.load(open(full_path))
+                        insights = causumx_output_to_natural_language_explanation(causumx_result)
 
-                        # insights = causumx_output_to_natural_language_explanation(causumx_result)
+                        if "solution_details" in causumx_result:
+                            insights = causumx_output_to_natural_language_explanation(causumx_result)
 
-                        insights = causumx_result["explanations"]
+                        else:
+                            st.error("Failed to generate an explanation. Please check the query and try again.")
+                            return
 
                         for i, insight in enumerate(insights):
                             st.markdown(insight)
@@ -208,7 +221,7 @@ def main():
                             red_nodes = list(causumx_result["solution_details"][i]["details"]["t_l"].keys())[0]
                             green_nodes = list(causumx_result["solution_details"][i]["details"]["t_h"].keys())[0]
 
-                            tab.graphviz_chart(get_causal_explanation(SO_DAG, green_nodes, red_nodes), use_container_width=True)
+                            tab.graphviz_chart(get_causal_explanation(dag, green_nodes, red_nodes), use_container_width=True)
 
                 else:
                     st.error("Failed to generate an explanation. Please check the query and try again.")
@@ -217,29 +230,31 @@ CUSTOM_DB_DESCRIPTION = "Custom Dataset"
 
 def load_dataset_options():
     datasets_with_explanations = {
+        "Stack Overflow":
+            {
+                "description": "Derived from Stack Overflow, this dataset includes data on posts, comments, votes, and more, ideal for analyzing software development trends.",
+                "SQL": "SELECT Country, AVG(ConvertedSalary)\nFROM Stack-Overflow\nGROUP BY Country",
+                "function": so,
+                "dag": SO_DAG,
+                "data_filename": "so_countries_col_new.csv"
+            },
+        "Adults": {
+            "description": "The Adult dataset contains demographic information about adults, including age, education, and income.",
+            "SQL": "SELECT occupation, AVG(income)\nFROM Adults\nGROUP BY occupation",
+            "function": adult,
+            "dag": ADULT_DAG,
+            "data_filename": "adult_new.csv",
+        },
         "German":
             {
 
                 "description": "The German Credit Data classifies individuals as good or bad credit risks based on several attributes, used commonly in credit scoring models.",
                 "SQL": "SELECT purpose, AVG(credit_risk)\nFROM German\nGROUP BY purpose",
                 "function": german,
+                "dag": GERMAN_DAG,
                 "data_filename": "german_credit_data_new.csv"
             },
         CUSTOM_DB_DESCRIPTION: "Upload a dataset CSV file and enter a DAG to get started.",
-        "Stack Overflow":
-            {
-            "description": "Derived from Stack Overflow, this dataset includes data on posts, comments, votes, and more, ideal for analyzing software development trends.",
-            "SQL": "SELECT Country, AVG(ConvertedSalary)\nFROM Stack-Overflow\nGROUP BY Country",
-                "function": so,
-                "data_filename": "so_countries_col_new.csv"
-        },
-
-        "Adults": {
-            "description": "The Adult dataset contains demographic information about adults, including age, education, and income.",
-            "SQL": "SELECT education, AVG(income)\nFROM Adults\nGROUP BY education",
-            "function": so,
-            "data_filename": "adults_new.csv",
-        }
 
     }
     return datasets_with_explanations

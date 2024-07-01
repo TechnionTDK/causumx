@@ -78,6 +78,67 @@ GERMAN_DAG =  ['status','duration','credit_history','purpose','amount','savings'
         'age -> savings','age -> status',
         'age -> duration','age -> amount']
 
+
+ADULT_DAG = [
+        'age',
+        'workclass',
+        'fnlwgt',
+        'education',
+        'education.num',
+        'marital.status',
+        'occupation',
+        'relationship',
+        'race',
+        'sex',
+        'capital.gain',
+        'capital.loss',
+        'hours.per.week',
+        'native.country',
+        'income',
+        'occupation_category',
+        # A
+        'sex -> income',
+        'race -> income',
+        # C
+        'age -> income',
+        'native.country -> income',
+        # M
+        'sex -> marital.status',
+        'race -> marital.status',
+        'age -> marital.status',
+        'native.country -> marital.status',
+        'marital.status -> income',
+        # L
+        'marital.status -> education.num',
+        'sex -> education.num',
+        'race -> education.num',
+        'age -> education.num',
+        'native.country -> education.num',
+        'education.num -> income',
+        # R
+        'hours.per.week -> income',
+        'occupation -> income',
+        'workclass -> income',
+        'education.num -> hours.per.week',
+        'education.num -> occupation',
+        'education.num -> workclass',
+        'marital.status -> hours.per.week',
+        'marital.status -> occupation',
+        'marital.status -> workclass',
+        'age -> hours.per.week',
+        'native.country -> hours.per.week',
+        'age -> occupation',
+        'native.country -> occupation',
+        'age -> workclass',
+        'native.country -> workclass',
+        'sex -> hours.per.week',
+        'sex -> occupation',
+        'sex -> workclass',
+        'race -> hours.per.week',
+        'race -> occupation',
+        'race -> workclass'
+    ]
+
 def so(k, tau):
     """
     :param k: coverage constraint
@@ -98,15 +159,11 @@ def so(k, tau):
     targetClass = 'ConvertedSalary'
     groupingAtt = 'Country'
     fds = ['Country', 'GDP', 'HDI', 'GINI', 'Continent']
-    #print(set(df['Continent'].tolist()))
-    # CPE.CPE(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
-    #         print_times=True)
     return CauSumX.cauSumX(df, SO_DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
                     print_times=True)
 
 
 def german(k,tau):
-    ####GERMAN############
     actionable_atts = ['status', 'duration', 'credit_history',
        'amount', 'savings', 'employment_duration', 'installment_rate',
        'personal_status_sex', 'other_debtors', 'present_residence', 'property',
@@ -119,11 +176,9 @@ def german(k,tau):
     targetClass = 'credit_risk'
     groupingAtt = 'purpose'
     fds = ['purpose']
-    # CPE.CPE(df, GERMAN_DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
-    #         print_times=True)
+
     return CauSumX.cauSumX(df, GERMAN_DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
             print_times=True)
-
 
 
 def accidents(k,tau):
@@ -202,66 +257,6 @@ def accidents(k,tau):
 
 
 def adult(k,tau):
-    DAG = [
-        'age;',
-        'workclass;',
-        'fnlwgt;',
-        'education;',
-        'education.num;',
-        'marital.status;',
-        'occupation;',
-        'relationship;',
-        'race;',
-        'sex;',
-        'capital.gain;',
-        'capital.loss;',
-        'hours.per.week;',
-        'native.country;',
-        'income;',
-        'occupation_category;',
-        # A
-        'sex -> income;',
-        'race -> income;',
-        # C
-        'age -> income;',
-        'native.country -> income;',
-        # M
-        'sex -> marital.status;',
-        'race -> marital.status;',
-        'age -> marital.status;',
-        'native.country -> marital.status;',
-        'marital.status -> income;',
-        # L
-        'marital.status -> education.num;',
-        'sex -> education.num;',
-        'race -> education.num;',
-        'age -> education.num;',
-        'native.country -> education.num;',
-        'education.num -> income;',
-        # R
-        'hours.per.week -> income;',
-        'occupation -> income;',
-        'workclass -> income;',
-        'education.num -> hours.per.week;',
-        'education.num -> occupation;',
-        'education.num -> workclass;',
-        'marital.status -> hours.per.week;',
-        'marital.status -> occupation;',
-        'marital.status -> workclass;',
-        'age -> hours.per.week;',
-        'native.country -> hours.per.week;',
-        'age -> occupation;',
-        'native.country -> occupation;',
-        'age -> workclass;',
-        'native.country -> workclass;',
-        'sex -> hours.per.week;',
-        'sex -> occupation;',
-        'sex -> workclass;',
-        'race -> hours.per.week;',
-        'race -> occupation;',
-        'race -> workclass;'
-    ]
-
     df = pd.read_csv(PATH + 'adult_new.csv', encoding='utf8')
     actionable_atts = [ 'age', 'workclass',  'education',
       'marital.status',
@@ -275,7 +270,7 @@ def adult(k,tau):
 
     fds = ['occupation',
            'occupation_category']
-    return CauSumX.cauSumX(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
+    return CauSumX.cauSumX(df, ADULT_DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
             print_times=True)
 
 
@@ -393,9 +388,9 @@ if __name__ == '__main__':
     k = 5
     tau = 0.75 # which fraction of the results that need to cover the results. the explnaation will be covering 0.75% of the countries at once.
 
-    #so(k,tau)
+    # so(k,tau)
     # german(k,tau)
-    #adult(k,tau)
+    adult(k,tau)
     #accidents(k,tau)
     #impus(k,tau)
-    synthatic(5,1)
+    # synthatic(5,1)
