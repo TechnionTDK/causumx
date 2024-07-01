@@ -145,6 +145,9 @@ def getCates(DAG, t_h,t_l,cate_h, cate_l, df_g, ordinal_atts, target, treatments
         if CATE < cate_l:
             cate_l = CATE
             t_l = treatment
+
+    print("Debug - treatments_cate in getCates:", treatments_cate)
+
     return treatments_cate, t_h, cate_h, t_l,cate_l
 
 def getTreatmentCATE(df_g, DAG,treatment,ordinal_atts,target):
@@ -164,6 +167,9 @@ def getTreatmentCATE(df_g, DAG,treatment,ordinal_atts,target):
     except:
         ATE = 0
         p_value = 0
+
+    print(f"Debug - Treatment: {treatment}, ATE: {ATE}, p_value: {p_value}")
+
     return ATE
 
 

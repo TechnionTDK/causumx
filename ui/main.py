@@ -57,7 +57,7 @@ def so(k, tau):
       'Dependents -> HoursComputer;',
       'HoursComputer -> ConvertedSalary;']
 
-   df = pd.read_csv(PATH + 'so_countries_col_new_full.csv', encoding='utf8')
+   df = pd.read_csv(PATH + 'so_countries_col_new.csv', encoding='utf8')
    ordinal_atts = {}
    targetClass = 'ConvertedSalary'
    groupingAtt = 'Country'

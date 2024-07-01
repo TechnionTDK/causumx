@@ -4,8 +4,12 @@ import streamlit as st
 import altair as alt
 import matplotlib.pyplot as plt
 import numpy as np
+import time
 import pandas as pd
 import pycountry
+import re
+import plotly.express as px
+
 
 from case_study import so, german, SO_DAG, GERMAN_DAG
 from llm_explainer import causumx_output_to_natural_language_explanation
@@ -24,33 +28,64 @@ def country_name_to_code(name):
             return "TR"
         return 'Unknown'
 
-def plot_bar_chart(countries, values):
-    # Generate a color for each country
-    colors = plt.cm.viridis(np.linspace(0, 1, len(countries)))
 
-    fig, ax = plt.subplots()
-    # Create bars with different colors
-    ax.bar(countries, values, color=colors)
+def plot_interactive_bar_chart(data, country_column, value_column, title=None):
+    # Convert the data to a DataFrame if it's not already
+    if not isinstance(data, pd.DataFrame):
+        df = pd.DataFrame(data)
+    else:
+        df = data.copy()
 
-    # Add some labels and title
-    ax.set_ylabel('Values')
-    ax.set_title('Values by Country')
-    ax.set_xticks(range(len(countries)), countries)
+    # Ensure the required columns exist
+    if country_column not in df.columns or value_column not in df.columns:
+        st.error(f"Required columns '{country_column}' or '{value_column}' not found in the data.")
+        return
 
-    return fig
+    # Convert value_column to numeric, ignoring errors
+    df[value_column] = pd.to_numeric(df[value_column], errors='coerce')
+
+    # Group by country, calculate mean value and count records
+    grouped_data = df.groupby(country_column).agg({
+        value_column: ['mean', 'count']
+    }).reset_index()
+
+    # Flatten the column names
+    grouped_data.columns = [country_column, f'Average {value_column}', 'Record Count']
+
+    # Sort and get top 10 countries
+    top = grouped_data.sort_values(f'Average {value_column}', ascending=False).head(15)
+
+    # Create the interactive bar chart
+    fig = px.bar(
+        top,
+        x=country_column,
+        y=f'Average {value_column}',
+        text=f'Average {value_column}',
+        hover_data=['Record Count'],
+        title=title or f'Top 15 {country_column} by Average {value_column}'
+    )
+
+    # Customize the layout
+    fig.update_traces(texttemplate='%{text:.2f}', textposition='outside')
+    fig.update_layout(
+        xaxis_title=country_column,
+        yaxis_title=f'Average {value_column}',
+        xaxis_tickangle=-45
+    )
+
+    # Display the chart in Streamlit
+    st.plotly_chart(fig, use_container_width=True)
+
 
 def main():
     st.title('✨ CauSumX UI')
 
     st.markdown("###### A UI for Explaining the Causes of Aggregate SQL Queries Results")
 
-    # get the path of the data file by using the current working directory
-
-    data = pd.read_csv(os.path.join(os.path.dirname(__file__), 'data', 'so_countries_col_new_full.csv'))
-
     st.sidebar.subheader('1. Upload Your Data')
     uploaded_dataset = st.sidebar.file_uploader("Upload a dataset CSV file", type=['csv'])
-    uploaded_dag = st.sidebar.text_input("Upload a DAG (python list)", value=str(SO_DAG))
+    uploaded_dag = st.sidebar.file_uploader("Upload a DAG (dot file)", type=['dot'])
+
     st.sidebar.subheader('Or Select a Preloaded Dataset')
     dataset_options_with_explanations = load_dataset_options()
 
@@ -68,11 +103,48 @@ def main():
     else:
 
         sql_query = dataset_options_with_explanations[selected_dataset]["SQL"]
+        data_filename = dataset_options_with_explanations[selected_dataset]["data_filename"]
+
+        data = pd.read_csv(os.path.join(os.path.dirname(__file__), 'data', data_filename), encoding='utf8')
+
+        print(f"Using dataset: {data_filename}")
+        print(data.head(100))
+
         # query_input = st.sidebar.code(causumx_result, language='sql')
         query_input = st.sidebar.text_area("Enter GROUP-BY SQL Query", value=sql_query, height=100)
-        size_constraint = st.sidebar.slider("Constraint on Explanation's Size", min_value=1, max_value=10, value=3)
+        size_constraint = st.sidebar.slider("Constraint on Explanation's Size", min_value=1, max_value=10, value=6)
         positive_or_negative = st.sidebar.radio("Causality Direction", ["Both", "Positive", "Negative"], index=1)
-        coverage_constraint = st.sidebar.slider("Coverage Constraint", min_value=0.0, max_value=1.0, value=0.75)
+        coverage_constraint = st.sidebar.slider("Coverage Constraint", min_value=0.0, max_value=1.0, value=0.50)
+
+
+        # extract the value insite the AVG (example: SELECT Country, AVG(ConvertedSalary)
+        # FROM Stack-Overflow
+        # GROUP BY Country -> ConvertedSalary
+        # Use regex to support AVG / avg / Avg / aVg / etc. and catch the paranthesis
+        pattern = r'AVG\s*\((.*?)\)'
+
+        def extract_avg_value(query):
+            match = re.search(pattern, query, re.IGNORECASE)
+            if match:
+                return match.group(1)
+            return None
+
+        target_value = extract_avg_value(query_input)
+        if target_value:
+            st.markdown(f"Target Value: {target_value}")
+
+
+        def extract_group_by_value(query):
+            pattern = r'GROUP\s+BY\s+(.*?)(?:\s*;|\s*$)'
+            match = re.search(pattern, query, re.IGNORECASE)
+            if match:
+                return match.group(1).strip()
+            return None
+
+
+        group_by_value = extract_group_by_value(query_input)
+        if group_by_value:
+            st.markdown(f"Group By Value: {group_by_value}")
 
         execute_button = st.sidebar.button('Execute Query')
         if True:
@@ -80,19 +152,18 @@ def main():
                 st.error("Please enter a valid SQL GROUP-BY query.")
             else:
                 if True:
-                    # progress_text = "Running CauSumX... 🏃‍"
-                    # my_bar = st.progress(0, text=progress_text)
-                    #
+                    progress_text = f"Running CauSumX with size constraint {size_constraint} and coverage constraint {coverage_constraint}..."
+                    my_bar = st.progress(0, text=progress_text)
+
                     # for percent_complete in range(100):
                     #     time.sleep(0.01)
                     #     my_bar.progress(percent_complete + 1, text=progress_text)
-                    # my_bar.empty()
 
-                    # TODO: what is this??
-                    tau = 0.75
-                    # causumx_result = dataset_options_with_explanations[selected_dataset]["function"](k=coverage_constraint, tau=tau)
+                    causumx_result = dataset_options_with_explanations[selected_dataset]["function"](k=size_constraint, tau=coverage_constraint)
 
-                    # my_bar.empty()
+                    print(causumx_result)
+
+                    my_bar.empty()
 
                     # dot_graph = get_causal_explanation()
                     col1, col2 = st.columns(2)
@@ -102,130 +173,23 @@ def main():
 
                         script_path = os.path.realpath(__file__)
                         script_directory = os.path.dirname(script_path)
-                        filename = "causumx_json_response_example.json"
-                        full_path = os.path.join(script_directory, filename)
-                        causumx_result = json.load(open(full_path))
+                        # filename = "causumx_json_response_example.json"
+                        # full_path = os.path.join(script_directory, filename)
+                        # causumx_result = json.load(open(full_path))
 
-                        insights = causumx_output_to_natural_language_explanation(causumx_result)
+                        # insights = causumx_output_to_natural_language_explanation(causumx_result)
+
+                        insights = causumx_result["explanations"]
 
                         for i, insight in enumerate(insights):
                             st.markdown(insight)
 
                         st.markdown("### Raw JSON")
                         st.json(causumx_result, expanded=False)
-                        def result_visualization(data):
-                            # Count records where the 'Continent' column == 'EU'
-                            records_from_europe_countries = data[data['Continent'] == 'EU'].shape[0]
 
-                            # Count records where the 'GDP' column == 'High'
-                            records_from_high_GDP_countries = data[data['GDP'] == 'High'].shape[0]
+                        st.markdown(f"#### 📊 Visualization")
+                        plot_interactive_bar_chart(data, group_by_value, target_value)
 
-                            # Count records where the 'Gini' column == 'High'
-                            records_from_high_Gini_countries = data[data['GINI'] == 'High'].shape[0]
-
-                            europe_tooltip = f"""<span class="tooltip">Europe<span class="tooltiptext">{records_from_europe_countries} records</span></span>"""
-
-                            tooltip_html = """
-                            <style>
-                            .tooltip {
-                              position: relative;
-                              display: inline; /* Ensure it's an inline element */
-                              background-color: red; /* Background color for the highlighted text */
-                              color: white; /* Text color */
-                              padding: 0 4px; /* Some padding around the text */
-                              border-radius: 4px; /* Optional: adds rounded corners */
-                              cursor: pointer; /* Changes the cursor to indicate it's interactive */
-                            }
-        
-                            .tooltip .tooltiptext {
-                              visibility: hidden;
-                              width: 120px;
-                              background-color: black;
-                              color: #fff;
-                              text-align: center;
-                              border-radius: 6px;
-                              padding: 5px 0;
-        
-                              /* Position the tooltip text */
-                              position: absolute;
-                              z-index: 1;
-                              bottom: 100%;
-                              margin-left: -60px;
-                              left: 50%;
-                            }
-        
-                            .tooltip:hover .tooltiptext {
-                              visibility: visible;
-                            }
-                            </style>
-                            """
-
-                            # tooltip_html += f"""<p>1️⃣ For countries in {europe_tooltip}, the most substantial effect on high salaries (effect size of 36K, 𝑝 < 1e-3) is observed for individuals under 35 with a Master’s degree.
-                            # Conversely, being a student has the greatest adverse impact on annual income (effect size: -39K, 𝑝 < 1e-3).</p>"""
-
-                            tooltip_html += f"""<p>1️⃣ For countries in {europe_tooltip}, the most substantial effect on high salaries (effect size of 36K) is observed for individuals under 35 with a Master’s degree.</p>"""
-
-                            high_GDP_level_tooltip = f"""<span class="tooltip" style="background-color: blue;">high GDP level<span class="tooltiptext">{records_from_high_GDP_countries} records</span></span>"""
-
-                            # tooltip_html += f"""<p>2️⃣ For countries with a {high_GDP_level_tooltip}, the most substantial effect on high salaries (effect size of 41K, 𝑝 < 1e-3 ) is observed for C-level executives.
-                            # Conversely, being over 55 with a bachelor’s degree has the greatest adverse impact on annual income (effect size: -35K,𝑝 < 1e-4).</p>"""
-
-                            tooltip_html += f"""<p>2️⃣ For countries with a {high_GDP_level_tooltip}, the most substantial effect on high salaries (effect size of 41K) is observed for C-level executives.</p>"""
-
-                            high_Gini_coefficient_tooltip = f"""<span class="tooltip" style="background-color: purple;">high Gini coefficient<span class="tooltiptext">{records_from_high_Gini_countries} records</span></span>"""
-
-                            tooltip_html += f"""<p>3️⃣ For countries with a {high_Gini_coefficient_tooltip}, the most substantial effect on high salaries (effect size of 29K) is observed for white individuals under 45.</p>"""
-
-                            # st.markdown(tooltip_html, unsafe_allow_html=True)
-
-                            st.markdown("### 📊 Result Visualization")
-
-                            # Plotting
-                            # fig = plot_bar_chart(countries, values)
-
-                            # st.markdown('Top 15 Countries by Average Salary')
-
-                            eu_data = data[data['Continent'] == 'EU']
-                            eu_countries = eu_data['Country'].unique().tolist()
-
-                            high_gdp_data = data[data['GDP'] == 'High']
-                            high_gdp_countries = high_gdp_data['Country'].unique().tolist()
-
-                            high_gini_data = data[data['GINI'] == 'High']
-                            high_gini_countries = high_gini_data['Country'].unique().tolist()
-
-                            average_salary_per_country = data.groupby('Country')['ConvertedSalary'].mean()
-
-                            data = average_salary_per_country.reset_index()
-
-                            def income_category(country):
-                                if country in high_gdp_countries:
-                                    return 'High GDP'
-                                elif country in eu_countries:
-                                    return 'EU'
-                                elif country in high_gini_countries:
-                                    return 'High GINI'
-                                else:
-                                    return 'Uncovered'
-
-                            data['Category'] = data['Country'].apply(income_category)
-
-                            income_color_scale = alt.Scale(domain=['High GDP', 'EU', 'High GINI', 'Uncovered'],
-                                                           range=['blue', 'red', 'purple', 'gray'])
-
-                            # change the names of the countries. For example: change United States to US, United Kingdom to UK, etc. Use an external module for that.
-
-                            data['Country'] = data['Country'].apply(country_name_to_code)
-
-                            chart = alt.Chart(data).mark_bar().encode(
-                                x=alt.X('Country:N', sort=alt.SortField('ConvertedSalary', order='descending'),
-                                        axis=alt.Axis(labelFontWeight='bold', labelFontSize=15, labelColor='black')),
-                                y='ConvertedSalary:Q',
-                                color=alt.Color('Category:N', scale=income_color_scale,
-                                                legend=alt.Legend(title="Income Level")),
-                            )
-
-                            # st.altair_chart(chart, use_container_width=True)
 
                     with col2:
                         st.markdown("### 🔷 Graphs")
@@ -253,22 +217,30 @@ CUSTOM_DB_DESCRIPTION = "Custom Dataset"
 
 def load_dataset_options():
     datasets_with_explanations = {
-        CUSTOM_DB_DESCRIPTION: "Upload a dataset CSV file and enter a DAG to get started.",
-        "Stack Overflow":
-            {
-            "description": "Derived from Stack Overflow, this dataset includes data on posts, comments, votes, and more, ideal for analyzing software development trends.",
-            "SQL": "SELECT Country, AVG(ConvertedSalary)\nFROM Stack-Overflow\nGROUP BY Country",
-                "function": so
-        },
         "German":
             {
 
                 "description": "The German Credit Data classifies individuals as good or bad credit risks based on several attributes, used commonly in credit scoring models.",
                 "SQL": "SELECT purpose, AVG(credit_risk)\nFROM German\nGROUP BY purpose",
-                "function": german
+                "function": german,
+                "data_filename": "german_credit_data_new.csv"
             },
-        "Accidents": "The Accidents dataset contains information about road accidents, including the severity of the accident and contributing factors.",
-        "Adults": "The Adult dataset contains demographic information about adults, including age, education, and income.",
+        CUSTOM_DB_DESCRIPTION: "Upload a dataset CSV file and enter a DAG to get started.",
+        "Stack Overflow":
+            {
+            "description": "Derived from Stack Overflow, this dataset includes data on posts, comments, votes, and more, ideal for analyzing software development trends.",
+            "SQL": "SELECT Country, AVG(ConvertedSalary)\nFROM Stack-Overflow\nGROUP BY Country",
+                "function": so,
+                "data_filename": "so_countries_col_new.csv"
+        },
+
+        "Adults": {
+            "description": "The Adult dataset contains demographic information about adults, including age, education, and income.",
+            "SQL": "SELECT education, AVG(income)\nFROM Adults\nGROUP BY education",
+            "function": so,
+            "data_filename": "adults_new.csv",
+        }
+
     }
     return datasets_with_explanations
 

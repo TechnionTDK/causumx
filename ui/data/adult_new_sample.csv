@@ -1,0 +1,4 @@
+,age,workclass,fnlwgt,education,education.num,marital.status,occupation_category,occupation,relationship,race,sex,capital.gain,capital.loss,hours.per.week,native.country,income
+0,late adulthood,?,77053,HS-grad,9,Widowed,,Other,Not-in-family,White,Female,0,4356,40,United-States,0
+1,late adulthood,Private,132870,HS-grad,9,Widowed,White Collar,Exec-managerial,Not-in-family,White,Female,0,4356,18,United-States,0
+2,late adulthood,?,186061,Some-college,10,Widowed,,Other,Unmarried,Black,Female,0,4356,40,United-States,0

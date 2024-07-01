@@ -136,6 +136,8 @@ def getHighLowTreatments(df_g, group, target,DAG, dropAtt, ordinal_atts, high, l
     treatments_cate, t_h, cate_h, t_l,cate_l = Utils.getCates(DAG,t_h,t_l, cate_h, cate_l, df_g,
                                                               ordinal_atts, target, treatments)
 
+    print("Debug - treatments_cate before filtering:", treatments_cate)
+
     treatments_cate = filter_above_below_median(treatments_cate)
 
     treatments = Utils.getNextLeveltreatments(treatments_cate, df_g, ordinal_atts, high, low)

@@ -197,7 +197,7 @@ def accidents(k,tau):
                        'Traffic_Calming', 'Traffic_Signal', 'Turning_Loop', 'Sunrise_Sunset',
                        'Civil_Twilight']
 
-    CPE.CPE(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
+    return CauSumX.cauSumX(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
             print_times=True)
 
 
@@ -275,7 +275,7 @@ def adult(k,tau):
 
     fds = ['occupation',
            'occupation_category']
-    CPE.CPE(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
+    return CauSumX.cauSumX(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
             print_times=True)
 
 
@@ -337,7 +337,7 @@ def impus(k,tau):
     groupingAtt = 'CLASSWKR'
     # #
     fds = ['CLASSWKR']
-    CPE.CPE(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
+    return CauSumX.cauSumX(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
             print_times=True)
 
 def a(row, mod):
@@ -382,11 +382,12 @@ def synthatic(k,tau):
     groupingAtt = 'G'
     # #
     fds = ['A1','A2','A3','A4']
-    CPE.CPE(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
+    CauSumX.cauSumX(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
             print_times=True)
 
-    CPE.BF(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
-            print_times=True)
+    # TODO: what is this?
+    # CPE.BF(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
+    #         print_times=True)
 
 if __name__ == '__main__':
     k = 5
