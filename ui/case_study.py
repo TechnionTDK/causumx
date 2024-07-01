@@ -390,7 +390,7 @@ def synthatic(k,tau):
 
 if __name__ == '__main__':
     k = 5
-    tau = 0.75
+    tau = 0.75 # which fraction of the results that need to cover the results. the explnaation will be covering 0.75% of the countries at once.
 
     #so(k,tau)
     # german(k,tau)

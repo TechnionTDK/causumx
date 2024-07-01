@@ -1,7 +1,7 @@
 import pandas as pd
 from apyori import apriori
-from mlxtend.preprocessing import TransactionEncoder
 from mlxtend.frequent_patterns import apriori
+from mlxtend.preprocessing import TransactionEncoder
 
 
 def addColName(row, col):

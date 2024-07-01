@@ -63,7 +63,7 @@ def main():
 
     st.sidebar.subheader('2. Enter Your Query')
 
-    if selected_dataset == "I've uploaded my own dataset":
+    if selected_dataset == CUSTOM_DB_DESCRIPTION:
         st.markdown("custom dataset")
     else:
 
@@ -249,10 +249,11 @@ def main():
                 else:
                     st.error("Failed to generate an explanation. Please check the query and try again.")
 
+CUSTOM_DB_DESCRIPTION = "Custom Dataset"
 
 def load_dataset_options():
     datasets_with_explanations = {
-        "I've uploaded my own dataset": "Upload a dataset CSV file and enter a DAG to get started.",
+        CUSTOM_DB_DESCRIPTION: "Upload a dataset CSV file and enter a DAG to get started.",
         "Stack Overflow":
             {
             "description": "Derived from Stack Overflow, this dataset includes data on posts, comments, votes, and more, ideal for analyzing software development trends.",
