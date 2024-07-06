@@ -67,7 +67,7 @@ def score_rule(rule: Rule, solution: List[Rule], covered: Set[int], covered_prot
     coverage_factor = (len(new_covered_protected) / len(
         protected_group)) / coverage_threshold if coverage_threshold > 0 else 1
 
-    return (utility_increase + protected_utility_increase) * (1 - overlap_factor) * fairness_factor * coverage_factor
+    return (protected_utility_increase + utility_increase) * (1 - overlap_factor) * fairness_factor * coverage_factor
 
 
 def greedy_fair_prescription_rules(rules: List[Rule], protected_group: Set[int], coverage_threshold: float,
@@ -113,6 +113,9 @@ def main():
     rules = generate_rules(df, 'Gender', 'ConvertedSalary')
 
     # Run greedy algorithm
+
+    # coverage_threshold is the desired minimum fraction of the protected group that should be covered by each rule
+    # it is used to calculate the coverage_factor in the score_rule function
     coverage_threshold = 0.1
     max_rules = 5
     solution = greedy_fair_prescription_rules(rules, protected_group, coverage_threshold, max_rules)
