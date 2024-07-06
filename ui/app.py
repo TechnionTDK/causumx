@@ -1,15 +1,10 @@
 import json
 import os
 import streamlit as st
-import altair as alt
-import matplotlib.pyplot as plt
-import numpy as np
-import time
 import pandas as pd
 import pycountry
 import re
 import plotly.express as px
-
 
 from case_study import so, german, SO_DAG, GERMAN_DAG, ADULT_DAG, adult
 from llm_explainer import causumx_output_to_natural_language_explanation
@@ -19,6 +14,7 @@ st.set_page_config(page_title="CauSumX UI", layout="wide")
 filename_name = os.path.basename(__file__)
 dirname = os.path.dirname(__file__)
 PATH = os.path.join(dirname, "data/")
+
 def country_name_to_code(name):
     try:
         return pycountry.countries.lookup(name).alpha_2
@@ -27,7 +23,6 @@ def country_name_to_code(name):
         if name == 'Turkey':
             return "TR"
         return 'Unknown'
-
 
 def plot_interactive_bar_chart(data, country_column, value_column, title=None):
     # Convert the data to a DataFrame if it's not already
@@ -76,7 +71,6 @@ def plot_interactive_bar_chart(data, country_column, value_column, title=None):
     # Display the chart in Streamlit
     st.plotly_chart(fig, use_container_width=True)
 
-
 def main():
     st.title('✨ CauSumX UI')
 
@@ -104,132 +98,142 @@ def main():
 
     st.sidebar.subheader('2. Enter Your Query')
 
-    if selected_dataset == CUSTOM_DB_DESCRIPTION:
-        st.markdown("custom dataset")
+    sql_query = dataset_options_with_explanations[selected_dataset]["SQL"]
+    data_filename = dataset_options_with_explanations[selected_dataset]["data_filename"]
+
+    if selected_dataset == "Custom Dataset" and not uploaded_dataset:
+        st.error("Please upload a dataset CSV file or select a preloaded dataset.")
+        return
+
+    if uploaded_dataset and uploaded_dag:
+        data = pd.read_csv(uploaded_dataset, encoding='utf8')
+        dag = uploaded_dag.read().decode('utf-8')
+
     else:
-
-        sql_query = dataset_options_with_explanations[selected_dataset]["SQL"]
-        data_filename = dataset_options_with_explanations[selected_dataset]["data_filename"]
-
         data = pd.read_csv(os.path.join(os.path.dirname(__file__), 'data', data_filename), encoding='utf8')
 
-        print(f"Using dataset: {data_filename}")
-        print(data.head(100))
+    print(f"Using dataset: {data_filename}")
+    print(data.head(100))
 
-        # query_input = st.sidebar.code(causumx_result, language='sql')
-        query_input = st.sidebar.text_area("Enter GROUP-BY SQL Query", value=sql_query, height=100)
-        size_constraint = st.sidebar.slider("Constraint on Explanation's Size", min_value=1, max_value=10, value=2)
-        positive_or_negative = st.sidebar.radio("Causality Direction", ["Both", "Positive", "Negative"], index=1)
-        coverage_constraint = st.sidebar.slider("Coverage Constraint", min_value=0.0, max_value=1.0, value=0.20)
-
-
-        # extract the value insite the AVG (example: SELECT Country, AVG(ConvertedSalary)
-        # FROM Stack-Overflow
-        # GROUP BY Country -> ConvertedSalary
-        # Use regex to support AVG / avg / Avg / aVg / etc. and catch the paranthesis
-        pattern = r'AVG\s*\((.*?)\)'
-
-        def extract_avg_value(query):
-            match = re.search(pattern, query, re.IGNORECASE)
-            if match:
-                return match.group(1)
-            return None
-
-        target_value = extract_avg_value(query_input)
-        if target_value:
-            st.markdown(f"Target Value: {target_value}")
+    # query_input = st.sidebar.code(causumx_result, language='sql')
+    query_input = st.sidebar.text_area("Enter GROUP-BY SQL Query", value=sql_query, height=100)
+    size_constraint = st.sidebar.slider("Constraint on Explanation's Size", min_value=1, max_value=10, value=2)
+    positive_or_negative = st.sidebar.radio("Causality Direction", ["Both", "Positive", "Negative"], index=1)
+    coverage_constraint = st.sidebar.slider("Coverage Constraint", min_value=0.0, max_value=1.0, value=0.20)
 
 
-        def extract_group_by_value(query):
-            pattern = r'GROUP\s+BY\s+(.*?)(?:\s*;|\s*$)'
-            match = re.search(pattern, query, re.IGNORECASE)
-            if match:
-                return match.group(1).strip()
-            return None
+    # extract the value insite the AVG (example: SELECT Country, AVG(ConvertedSalary)
+    # FROM Stack-Overflow
+    # GROUP BY Country -> ConvertedSalary
+    # Use regex to support AVG / avg / Avg / aVg / etc. and catch the paranthesis
+    pattern = r'AVG\s*\((.*?)\)'
+
+    def extract_avg_value(query):
+        match = re.search(pattern, query, re.IGNORECASE)
+        if match:
+            return match.group(1)
+        return None
+
+    target_value = extract_avg_value(query_input)
+    if target_value:
+        st.markdown(f"Target Value: {target_value}")
 
 
-        group_by_value = extract_group_by_value(query_input)
-        if group_by_value:
-            st.markdown(f"Group By Value: {group_by_value}")
+    def extract_group_by_value(query):
+        pattern = r'GROUP\s+BY\s+(.*?)(?:\s*;|\s*$)'
+        match = re.search(pattern, query, re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+        return None
 
-        execute_button = st.sidebar.button('Execute Query')
-        if True:
-            if not query_input:
-                st.error("Please enter a valid SQL GROUP-BY query.")
-            else:
-                if True:
-                    progress_text = f"Running CauSumX with size constraint {size_constraint} and coverage constraint {coverage_constraint}..."
-                    my_bar = st.progress(0, text=progress_text)
 
-                    # for percent_complete in range(100):
-                    #     time.sleep(0.01)
-                    #     my_bar.progress(percent_complete + 1, text=progress_text)
+    group_by_value = extract_group_by_value(query_input)
+    if group_by_value:
+        st.markdown(f"Group By Value: {group_by_value}")
 
-                    dag = dataset_options_with_explanations[selected_dataset]["dag"]
-                    # causumx_result = dataset_options_with_explanations[selected_dataset]["function"](k=size_constraint, tau=coverage_constraint)
+    execute_button = st.sidebar.button('Execute Query')
+    if True:
+        if not query_input:
+            st.error("Please enter a valid SQL GROUP-BY query.")
+        else:
+            if True:
+                progress_text = f"Running CauSumX with size constraint {size_constraint} and coverage constraint {coverage_constraint}..."
+                my_bar = st.progress(0, text=progress_text)
 
-                    my_bar.empty()
+                # for percent_complete in range(100):
+                #     time.sleep(0.01)
+                #     my_bar.progress(percent_complete + 1, text=progress_text)
 
-                    # dot_graph = get_causal_explanation()
-                    col1, col2 = st.columns(2)
+                dag = dataset_options_with_explanations[selected_dataset]["dag"]
+                # causumx_result = dataset_options_with_explanations[selected_dataset]["function"](k=size_constraint, tau=coverage_constraint)
 
-                    with col1:
-                        st.markdown("### 💬 Causal Explanation")
+                my_bar.empty()
 
-                        # check if causumx_result contains the key "solution_details"
-                        # if so, the explanation was generated successfully
-                        # otherwise, display an error message
+                # dot_graph = get_causal_explanation()
+                col1, col2 = st.columns(2)
 
-                        script_path = os.path.realpath(__file__)
-                        script_directory = os.path.dirname(script_path)
-                        filename = "causumx_json_response_example.json"
-                        full_path = os.path.join(script_directory, filename)
-                        causumx_result = json.load(open(full_path))
+                with col1:
+                    st.markdown("### 💬 Causal Explanation")
+
+                    # check if causumx_result contains the key "solution_details"
+                    # if so, the explanation was generated successfully
+                    # otherwise, display an error message
+
+                    script_path = os.path.realpath(__file__)
+                    script_directory = os.path.dirname(script_path)
+                    filename = "causumx_json_response_example.json"
+                    full_path = os.path.join(script_directory, filename)
+                    causumx_result = json.load(open(full_path))
+                    insights = causumx_output_to_natural_language_explanation(causumx_result)
+
+                    if "solution_details" in causumx_result:
                         insights = causumx_output_to_natural_language_explanation(causumx_result)
 
-                        if "solution_details" in causumx_result:
-                            insights = causumx_output_to_natural_language_explanation(causumx_result)
+                    else:
+                        st.error("Failed to generate an explanation. Please check the query and try again.")
+                        return
 
-                        else:
-                            st.error("Failed to generate an explanation. Please check the query and try again.")
-                            return
+                    for i, insight in enumerate(insights):
+                        st.markdown(insight)
 
-                        for i, insight in enumerate(insights):
-                            st.markdown(insight)
+                    st.markdown("### Raw JSON")
+                    st.json(causumx_result, expanded=False)
 
-                        st.markdown("### Raw JSON")
-                        st.json(causumx_result, expanded=False)
-
-                        st.markdown(f"#### 📊 Visualization")
-                        plot_interactive_bar_chart(data, group_by_value, target_value)
+                    st.markdown(f"#### 📊 Visualization")
+                    plot_interactive_bar_chart(data, group_by_value, target_value)
 
 
-                    with col2:
-                        st.markdown("### 🔷 Graphs")
+                with col2:
+                    st.markdown("### 🔷 Graphs")
 
-                        # create tabs based on the number of insights
+                    # create tabs based on the number of insights
 
-                        tab_titles = []
-                        for i, insight in enumerate(insights):
-                            tab_titles.append(f"Insight {i + 1}")
+                    tab_titles = []
+                    for i, insight in enumerate(insights):
+                        tab_titles.append(f"Insight {i + 1}")
 
-                        # create tabs
-                        tabs = st.tabs(tab_titles)
+                    # create tabs
+                    tabs = st.tabs(tab_titles)
 
-                        for i, tab in enumerate(tabs):
-                            # find the
-                            red_nodes = list(causumx_result["solution_details"][i]["details"]["t_l"].keys())[0]
-                            green_nodes = list(causumx_result["solution_details"][i]["details"]["t_h"].keys())[0]
+                    for i, tab in enumerate(tabs):
+                        # find the
+                        red_nodes = list(causumx_result["solution_details"][i]["details"]["t_l"].keys())[0]
+                        green_nodes = list(causumx_result["solution_details"][i]["details"]["t_h"].keys())[0]
 
-                            tab.graphviz_chart(get_causal_explanation(dag, green_nodes, red_nodes), use_container_width=True)
+                        tab.graphviz_chart(get_causal_explanation(dag, green_nodes, red_nodes), use_container_width=True)
 
-                else:
-                    st.error("Failed to generate an explanation. Please check the query and try again.")
-
-CUSTOM_DB_DESCRIPTION = "Custom Dataset"
+            else:
+                st.error("Failed to generate an explanation. Please check the query and try again.")
 
 def load_dataset_options():
     datasets_with_explanations = {
+        "Custom Dataset": {
+            "description": "Upload a dataset CSV file and enter a DAG to get started.",
+            "SQL": None,
+            "function": None,
+            "dag": None,
+            "data_filename": None,
+        },
         "Stack Overflow":
             {
                 "description": "Derived from Stack Overflow, this dataset includes data on posts, comments, votes, and more, ideal for analyzing software development trends.",
@@ -254,8 +258,6 @@ def load_dataset_options():
                 "dag": GERMAN_DAG,
                 "data_filename": "german_credit_data_new.csv"
             },
-        CUSTOM_DB_DESCRIPTION: "Upload a dataset CSV file and enter a DAG to get started.",
-
     }
     return datasets_with_explanations
 

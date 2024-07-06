@@ -1,7 +1,7 @@
 .idea/
-tests/
 .env
 ui/__pycache__/.env
 ui/politai
 Temp.csv
 ui/Temp.csv
+.aider*
