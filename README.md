@@ -6,8 +6,8 @@ This project provides a user interface for explaining the causes of aggregate SQ
 
 1. Clone the repository:
     ```sh
-    git clone <repository_url>
-    cd <repository_directory>
+    git clone https://github.com/nativlevy/causumx
+    cd causumx
     ```
 
 2. Create a virtual environment and activate it:
@@ -23,7 +23,7 @@ This project provides a user interface for explaining the causes of aggregate SQ
 
 4. Create a `.env` file with the following content:
     ```env
-    # Add your environment variables here
+    OPENAI_API_KEY=sk-...
     ```
 
 ## Usage
@@ -41,7 +41,3 @@ Open your web browser and navigate to `http://localhost:8081` to access the appl
 - Select from preloaded datasets.
 - Enter and execute SQL GROUP-BY queries.
 - Visualize causal explanations and interactive bar charts.
-
-## License
-
-This project is licensed under the MIT License.
