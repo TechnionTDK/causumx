@@ -30,7 +30,7 @@ This project provides a user interface for explaining the causes of aggregate SQ
 
 Run the Streamlit application:
 ```sh
-streamlit run ui/app.py --server.port 8081 --server.address localhost
+python -m streamlit run ui/app.py --server.port 8081 --server.address localhost
 ```
 
 Open your web browser and navigate to `http://localhost:8081` to access the application.
