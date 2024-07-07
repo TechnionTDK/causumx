@@ -19,8 +19,24 @@ def load_data(file_path: str) -> pd.DataFrame:
 
 
 def generate_rules(df: pd.DataFrame, protected_attribute: str, outcome: str) -> List[Rule]:
+    # TODO: add this
+    # def cauSumX(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, high, low,
+    #             print_times=False):
+    #     df = df.dropna()
+    #     # num of groups in the aggregated view
+    #     m = len(df.groupby([groupingAtt]))
+    #
+    #     result = {}
+    #
+    #     # step 1 - Apriori algorithm
+    #     if print_times:
+    #         start_time = time.time()
+    #     groups = Algorithms.getAllGroups(df, fds, APRIORI)
+
+
+
     rules = []
-    attributes = ['Country', 'FormalEducation', 'DevType']  # Add more attributes as needed
+    attributes = ['Country', 'FormalEducation', 'DevType']  # functional dependencies
 
     for attr in attributes:
         for value in df[attr].unique():

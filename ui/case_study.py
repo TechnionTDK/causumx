@@ -63,7 +63,7 @@ SO_DAG = [
     'Dependents -> HoursComputer',
     'HoursComputer -> ConvertedSalary',]
 
-GERMAN_DAG =  ['status','duration','credit_history','purpose','amount','savings',
+GERMAN_DAG = ['status','duration','credit_history','purpose','amount','savings',
         'employment_duration','installment_rate','personal_status_sex','other_debtors',
         'present_residence','property','age','other_installment_plans','housing','number_credits',
         'job','people_liable','telephone','foreign_worker','credit_risk',
