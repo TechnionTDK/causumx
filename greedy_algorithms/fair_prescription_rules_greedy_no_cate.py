@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from typing import List, Set, Tuple
+from typing import List, Set
 
 
 class Rule:
@@ -32,8 +32,6 @@ def generate_rules(df: pd.DataFrame, protected_attribute: str, outcome: str) -> 
     #     if print_times:
     #         start_time = time.time()
     #     groups = Algorithms.getAllGroups(df, fds, APRIORI)
-
-
 
     rules = []
     attributes = ['Country', 'FormalEducation', 'DevType']  # functional dependencies
