@@ -22,14 +22,6 @@ def load_data(file_path: str) -> pd.DataFrame:
 def get_grouping_patterns(df: pd.DataFrame, fds: List[str], min_support: float) -> List[dict]:
     # Use Apriori algorithm to get grouping patterns
     grouping_patterns = getAllGroups(df, fds, min_support)
-    
-    # Print each grouping pattern
-    for i, pattern in enumerate(grouping_patterns, 1):
-        print(f"Grouping Pattern {i}:")
-        for attribute, value in pattern.items():
-            print(f"  {attribute}: {value}")
-        print()
-    
     return grouping_patterns
 
 
@@ -110,6 +102,13 @@ def main():
 
     # Get the Grouping Patterns
     grouping_patterns = get_grouping_patterns(df, fds, min_support)
+
+    # Print each grouping pattern
+    for i, pattern in enumerate(grouping_patterns, 1):
+        print(f"Grouping Pattern {i}:")
+        for attribute, value in pattern.items():
+            print(f"  {attribute}: {value}")
+        print()
 
 if __name__ == "__main__":
     main()
