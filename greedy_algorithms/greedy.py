@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from typing import List, Set
+from ui.Algorithms import getAllGroups
 
 
 class Rule:
@@ -18,20 +19,18 @@ def load_data(file_path: str) -> pd.DataFrame:
     return pd.read_csv(file_path)
 
 
-def get_grouping_patterns(complete this function):
-    # TODO: add this - Use Apriori for getting grouping patterns
-    # def cauSumX(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, high, low,
-    #             print_times=False):
-    #     df = df.dropna()
-    #     # num of groups in the aggregated view
-    #     m = len(df.groupby([groupingAtt]))
-    #
-    #     result = {}
-    #
-    #     # step 1 - Apriori algorithm
-    #     if print_times:
-    #         start_time = time.time()
-    #     groups = Algorithms.getAllGroups(df, fds, APRIORI)
+def get_grouping_patterns(df: pd.DataFrame, fds: List[str], min_support: float) -> List[dict]:
+    # Use Apriori algorithm to get grouping patterns
+    grouping_patterns = getAllGroups(df, fds, min_support)
+    
+    # Print each grouping pattern
+    for i, pattern in enumerate(grouping_patterns, 1):
+        print(f"Grouping Pattern {i}:")
+        for attribute, value in pattern.items():
+            print(f"  {attribute}: {value}")
+        print()
+    
+    return grouping_patterns
 
 
 def score_rule(rule: Rule, solution: List[Rule], covered: Set[int], covered_protected: Set[int],
@@ -100,9 +99,16 @@ def main():
     # Define protected group (non-male in this case)
     protected_group = set(df[df['Gender'] != 'Male'].index)
 
-    # Get the Grouping Patterns
-    grouping_patterns = get_grouping_patterns()
+    # Define functional dependencies (FDs) and minimum support
+    fds = ['Country', 'Gender', 'Age']  # Example FDs, adjust as needed
+    min_support = 0.1  # Example minimum support, adjust as needed
 
+    # Get the Grouping Patterns
+    grouping_patterns = get_grouping_patterns(df, fds, min_support)
+
+    # TODO: Implement the rest of the main function
+    # This should include creating rules from the grouping patterns,
+    # running the greedy algorithm, and presenting the results
 
 
 if __name__ == "__main__":
