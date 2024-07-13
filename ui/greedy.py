@@ -19,9 +19,9 @@ def load_data(file_path: str) -> pd.DataFrame:
     return pd.read_csv(file_path)
 
 
-def get_grouping_patterns(df: pd.DataFrame, fds: List[str], min_support: float) -> List[dict]:
+def get_grouping_patterns(df: pd.DataFrame, fds: List[str], apriori: float) -> List[dict]:
     # Use Apriori algorithm to get grouping patterns
-    grouping_patterns = getAllGroups(df, fds, min_support)
+    grouping_patterns = getAllGroups(df, fds, apriori)
     return grouping_patterns
 
 
@@ -94,14 +94,15 @@ def main():
 
     # add the grouping attribute to the list of functional dependencies as the first element
     fds = [grouping_attribute] + fds
+    print(f"Functional Dependencies: {fds}")
 
     # Define protected group (non-male in this case)
     protected_group = set(df[df['Gender'] != 'Male'].index)
 
-    min_support = 0.1  # TODO: Set the minimum support threshold
+    APRIORI = 0.1
 
     # Get the Grouping Patterns
-    grouping_patterns = get_grouping_patterns(df, fds, min_support)
+    grouping_patterns = get_grouping_patterns(df, fds, APRIORI)
 
     # Print each grouping pattern
     for i, pattern in enumerate(grouping_patterns, 1):

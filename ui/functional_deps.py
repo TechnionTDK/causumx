@@ -56,15 +56,15 @@ def calculate_conditional_entropy(df, x, y):
 # Example usage
 if __name__ == "__main__":
     # Load your data
-    # df = pd.read_csv("data/so_countries_col_new.csv")
+    df = pd.read_csv("data/so_countries_col_new.csv")
     # Set the grouping attribute (e.g., 'Country')
-    # grouping_attribute = 'Country'
+    grouping_attribute = 'Country'
 
     # df = pd.read_csv("data/german_credit_data_new.csv")
     # grouping_attribute = 'purpose'
 
-    df = pd.read_csv("data/adult_new.csv")
-    grouping_attribute = 'occupation'
+    # df = pd.read_csv("data/adult_new.csv")
+    # grouping_attribute = 'occupation'
 
 
     # Calculate functional dependencies

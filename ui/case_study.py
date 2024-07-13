@@ -14,6 +14,7 @@ dirname = os.path.dirname(__file__)
 PATH = os.path.join(dirname, "data/")
 APRIORI = 0.1
 
+# TODO: add ; at the end of each list item
 SO_DAG = [
     'Continent',
     'HoursComputer',

@@ -172,8 +172,6 @@ def isGroupMember(row, group):
 # in everystate we look for the maximum. If the maximum is in the previous state, we stop.
 # if in treatment level 3 - we need a
 # How do we calculate the score: CATE for everyone and CATE for the propeted and then we take the diff in absolute value.
-
-
 def getHighLowTreatments(df_g, group, target,DAG, dropAtt, ordinal_atts, high, low,actionable_atts_org):
     df_g.drop(dropAtt, axis=1, inplace=True)
     actionable_atts = [a for a in actionable_atts_org if not a in dropAtt]
