@@ -238,15 +238,15 @@ def main():
                     fds = calculate_functional_dependencies(data, group_by_value)
                     fds = [group_by_value] + fds
 
-                    st.text(f"Calling CauSumX with the following parameters:")
-                    st.text(f"DAG: {dag}")
-                    # st.text(f"Ordinal Attributes: {ordinal_atts}")
-                    st.text(f"Target Class: {targetClass}")
-                    st.text(f"Grouping Attribute: {groupingAtt}")
-                    st.text(f"Functional Dependencies: {fds}")
-                    st.text(f"Size Constraint: {size_constraint}")
-                    st.text(f"Coverage Constraint: {coverage_constraint}")
-                    st.text(f"Actionable Attributes: {actionable_atts}")
+                    # st.text(f"Calling CauSumX with the following parameters:")
+                    # st.text(f"DAG: {dag}")
+                    # # st.text(f"Ordinal Attributes: {ordinal_atts}")
+                    # st.text(f"Target Class: {targetClass}")
+                    # st.text(f"Grouping Attribute: {groupingAtt}")
+                    # st.text(f"Functional Dependencies: {fds}")
+                    # st.text(f"Size Constraint: {size_constraint}")
+                    # st.text(f"Coverage Constraint: {coverage_constraint}")
+                    # st.text(f"Actionable Attributes: {actionable_atts}")
 
                     causumx_result = json.loads(CauSumX.cauSumX(data, dag, ordinal_atts, targetClass, groupingAtt, fds, size_constraint, coverage_constraint,
                                            actionable_atts, True, True,
