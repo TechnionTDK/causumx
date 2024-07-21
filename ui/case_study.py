@@ -64,6 +64,55 @@ SO_DAG = [
     'Dependents -> HoursComputer;',
     'HoursComputer -> ConvertedSalary;',]
 
+SO_DAG = [
+    'Continent',
+    'HoursComputer',
+    'UndergradMajor',
+    'FormalEducation',
+    'Age',
+    'Gender',
+    'Dependents',
+    'Country',
+    'DevType',
+    'RaceEthnicity',
+    'ConvertedSalary',
+    'HDI',
+    'GINI',
+    'GDP',
+    'HDI -> GINI',
+    'GINI -> ConvertedSalary',
+    'GINI -> GDP',
+    'GDP -> ConvertedSalary',
+    'Gender -> FormalEducation',
+    'Gender -> UndergradMajor',
+    'Gender -> DevType',
+    'Gender -> ConvertedSalary',
+    'Country -> ConvertedSalary',
+    'Country -> FormalEducation',
+    'Country -> RaceEthnicity',
+    'Continent -> Country',
+
+    'FormalEducation -> DevType',
+    'FormalEducation -> UndergradMajor',
+
+    'Continent -> UndergradMajor',
+    'Continent -> FormalEducation',
+    'Continent -> RaceEthnicity',
+    'Continent -> ConvertedSalary',
+
+    'RaceEthnicity -> ConvertedSalary',
+    'UndergradMajor -> DevType',
+
+    'DevType -> ConvertedSalary',
+    'DevType -> HoursComputer',
+    'Age -> ConvertedSalary',
+    'Age -> DevType',
+    'Age -> Dependents',
+    'Age -> FormalEducation',
+
+    'Dependents -> HoursComputer',
+    'HoursComputer -> ConvertedSalary',]
+
 GERMAN_DAG = ['status;','duration;','credit_history;','purpose;','amount;','savings;',
         'employment_duration;','installment_rate;','personal_status_sex;','other_debtors;',
         'present_residence;','property;','age;','other_installment_plans;','housing;','number_credits;',
@@ -389,9 +438,10 @@ if __name__ == '__main__':
     k = 5
     tau = 0.75 # which fraction of the results that need to cover the results. the explnaation will be covering 0.75% of the countries at once.
 
-    # so(k,tau)
+    result = so(k,tau)
+    print(result)
     # german(k,tau)
-    adult(k,tau)
+    # adult(k,tau)
     #accidents(k,tau)
     #impus(k,tau)
     # synthatic(5,1)

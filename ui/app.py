@@ -111,15 +111,6 @@ def main():
     st.sidebar.markdown("Or:")
     button_for_dag = st.sidebar.button('Run Causal Discovery Algorithm')
 
-    # actionable_atts input. THis should be (all attributes by default)
-    actionable_atts = st.sidebar.text_area("Enter Actionable Attributes (comma-separated). Leave blank for all attributes.")
-
-    # Example:
-    # Gender, SexualOrientation, EducationParents, RaceEthnicity, Age
-
-    # turn the actionable_atts into a list
-    actionable_atts = [att.strip() for att in actionable_atts.split(',')]
-
     st.sidebar.subheader('Or Select a Preloaded Dataset')
     dataset_options_with_explanations = load_dataset_options()
 
@@ -133,21 +124,32 @@ def main():
     st.sidebar.subheader('2. Enter Your Query')
 
     sql_query = ""
+    actionable_atts = ""
 
     # Example:
     # SELECT Country, AVG(ConvertedSalary) FROM Stack-Overflow GROUP BY Country
 
-    size_constraint = st.sidebar.slider("Constraint on Explanation's Size", min_value=1, max_value=10, value=2)
+    size_constraint = st.sidebar.slider("Constraint on Explanation's Size", min_value=1, max_value=10, value=5)
     positive_or_negative = st.sidebar.radio("Causality Direction", ["Both", "Positive", "Negative"], index=1)
-    coverage_constraint = st.sidebar.slider("Coverage Constraint", min_value=0.0, max_value=1.0, value=0.20)
+    coverage_constraint = st.sidebar.slider("Coverage Constraint", min_value=0.0, max_value=1.0, value=0.75)
 
     if selected_dataset != "Custom Dataset":
         sql_query = dataset_options_with_explanations[selected_dataset]["SQL"]
         data_filename = dataset_options_with_explanations[selected_dataset]["data_filename"]
         data = pd.read_csv(PATH + data_filename, encoding='utf8')
+        actionable_atts = dataset_options_with_explanations[selected_dataset]["actionable_atts"]
         # set the query input to the preloaded query
 
+
+
     query_input = st.sidebar.text_area("Enter GROUP-BY SQL Query", value=sql_query, height=100)
+    # actionable_atts input. THis should be (all attributes by default)
+    # Example:
+    # Gender, SexualOrientation, EducationParents, RaceEthnicity, Age
+    actionable_atts = st.sidebar.text_area("Enter Actionable Attributes (comma-separated). Leave blank for all attributes.", value=actionable_atts)
+
+    # turn the actionable_atts into a list
+    actionable_atts = [att.strip() for att in actionable_atts.split(',')]
 
     if selected_dataset == "Custom Dataset" and not uploaded_dataset:
         st.error("Please upload a dataset CSV file or select a preloaded dataset.")
@@ -205,13 +207,13 @@ def main():
 
     execute_button = st.sidebar.button('Execute Query')
 
-    if True:
+    if execute_button:
         if not query_input:
             st.error("Please enter a valid SQL GROUP-BY query.")
         else:
             if True:
                 progress_text = f"Running CauSumX with size constraint {size_constraint} and coverage constraint {coverage_constraint}..."
-                # my_bar = st.progress(0, text=progress_text)
+                my_bar = st.progress(0, text=progress_text)
 
                 # for percent_complete in range(100):
                 #     time.sleep(0.01)
@@ -221,8 +223,13 @@ def main():
                 if selected_dataset != "Custom Dataset":
                     dag = dataset_options_with_explanations[selected_dataset]["dag"]
                     causumx_function = dataset_options_with_explanations[selected_dataset]["function"]
-                    # causumx_result = causumx_function(k=size_constraint, tau=coverage_constraint)
-
+                    causumx_result = json.loads(causumx_function(k=size_constraint, tau=coverage_constraint))
+                    # script_path = os.path.realpath(__file__)
+                    # script_directory = os.path.dirname(script_path)
+                    # filename = "causumx_json_response_example.json"
+                    # full_path = os.path.join(script_directory, filename)
+                    # causumx_result = json.load(open(full_path))
+                #
 
                 else:
                     ordinal_atts = {}
@@ -230,11 +237,22 @@ def main():
                     groupingAtt = group_by_value
                     fds = calculate_functional_dependencies(data, group_by_value)
                     fds = [group_by_value] + fds
-                    causumx_result = CauSumX.cauSumX(data, dag, ordinal_atts, targetClass, groupingAtt, fds, size_constraint, coverage_constraint,
-                                           actionable_atts, True, True,
-                                           print_times=True)
 
-                # my_bar.empty()
+                    st.text(f"Calling CauSumX with the following parameters:")
+                    st.text(f"DAG: {dag}")
+                    # st.text(f"Ordinal Attributes: {ordinal_atts}")
+                    st.text(f"Target Class: {targetClass}")
+                    st.text(f"Grouping Attribute: {groupingAtt}")
+                    st.text(f"Functional Dependencies: {fds}")
+                    st.text(f"Size Constraint: {size_constraint}")
+                    st.text(f"Coverage Constraint: {coverage_constraint}")
+                    st.text(f"Actionable Attributes: {actionable_atts}")
+
+                    causumx_result = json.loads(CauSumX.cauSumX(data, dag, ordinal_atts, targetClass, groupingAtt, fds, size_constraint, coverage_constraint,
+                                           actionable_atts, True, True,
+                                           print_times=True))
+
+                my_bar.empty()
 
                 # dot_graph = get_causal_explanation()
                 col1, col2 = st.columns(2)
@@ -246,18 +264,12 @@ def main():
                     # if so, the explanation was generated successfully
                     # otherwise, display an error message
 
-                    script_path = os.path.realpath(__file__)
-                    script_directory = os.path.dirname(script_path)
-                    filename = "causumx_json_response_example.json"
-                    full_path = os.path.join(script_directory, filename)
-                    causumx_result = json.load(open(full_path))
-                    insights = causumx_output_to_natural_language_explanation(causumx_result)
-
                     if "solution_details" in causumx_result:
                         insights = causumx_output_to_natural_language_explanation(causumx_result)
 
                     else:
                         st.error("Failed to generate an explanation. Please check the query and try again.")
+                        st.json(causumx_result, expanded=False)
                         return
 
                     for i, insight in enumerate(insights):
@@ -307,7 +319,7 @@ def load_dataset_options():
                 "SQL": "SELECT Country, AVG(ConvertedSalary)\nFROM Stack-Overflow\nGROUP BY Country",
                 "function": so,
                 "dag": SO_DAG,
-                "actionable_atts": [],
+                "actionable_atts": "Gender, SexualOrientation, EducationParents, RaceEthnicity, Age",
                 "data_filename": "so_countries_col_new.csv"
             },
         "Adults": {
