@@ -169,7 +169,7 @@ def isGroupMember(row, group):
 # then we more to treatment level 2: (2 conditaaion do master AND learn python)
 # if treatment = 1 is not positive, so we dont need to check for treatment = 2. Only the treatment with positive will need move to second treatment.
 # only return the ones with maximal score.
-# in everystate we look for the maximum. If the maximum is in the previous state, we stop.
+# in every level we look for the maximum. If the maximum is in the previous level, we stop.
 # if in treatment level 3 - we need a
 # How do we calculate the score: CATE for everyone and CATE for the propeted and then we take the diff in absolute value.
 def getHighLowTreatments(df_g, group, target,DAG, dropAtt, ordinal_atts, high, low,actionable_atts_org):

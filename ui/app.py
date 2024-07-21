@@ -8,13 +8,41 @@ import plotly.express as px
 
 from case_study import so, german, SO_DAG, GERMAN_DAG, ADULT_DAG, adult
 from llm_explainer import causumx_output_to_natural_language_explanation
+from ui import CauSumX
 from ui.explanation_visualizer import get_causal_explanation
+from ui.functional_deps import calculate_functional_dependencies
 
 st.set_page_config(page_title="CauSumX UI", layout="wide")
 filename_name = os.path.basename(__file__)
 dirname = os.path.dirname(__file__)
 PATH = os.path.join(dirname, "data/")
 
+import io
+
+
+def dot_to_list(uploaded_file):
+    graph_list = []
+
+    # Read the content of the uploaded file
+    content = uploaded_file.getvalue().decode("utf-8")
+
+    # Remove comments and empty lines
+    content = '\n'.join(line.strip() for line in content.split('\n')
+                        if line.strip() and not line.strip().startswith('//'))
+
+    # Extract graph content
+    graph_content = content.split('{', 1)[1].rsplit('}', 1)[0]
+
+    # Process each line
+    for line in graph_content.split(';'):
+        line = line.strip()
+        if line:
+            # Add semicolon to the end of each item if it's not already there
+            if not line.endswith(';'):
+                line += ';'
+            graph_list.append(line)
+
+    return graph_list
 def country_name_to_code(name):
     try:
         return pycountry.countries.lookup(name).alpha_2
@@ -86,6 +114,12 @@ def main():
     # actionable_atts input. THis should be (all attributes by default)
     actionable_atts = st.sidebar.text_area("Enter Actionable Attributes (comma-separated). Leave blank for all attributes.")
 
+    # Example:
+    # Gender, SexualOrientation, EducationParents, RaceEthnicity, Age
+
+    # turn the actionable_atts into a list
+    actionable_atts = [att.strip() for att in actionable_atts.split(',')]
+
     st.sidebar.subheader('Or Select a Preloaded Dataset')
     dataset_options_with_explanations = load_dataset_options()
 
@@ -98,29 +132,45 @@ def main():
 
     st.sidebar.subheader('2. Enter Your Query')
 
-    sql_query = dataset_options_with_explanations[selected_dataset]["SQL"]
-    data_filename = dataset_options_with_explanations[selected_dataset]["data_filename"]
+    sql_query = ""
+
+    # Example:
+    # SELECT Country, AVG(ConvertedSalary) FROM Stack-Overflow GROUP BY Country
+
+    size_constraint = st.sidebar.slider("Constraint on Explanation's Size", min_value=1, max_value=10, value=2)
+    positive_or_negative = st.sidebar.radio("Causality Direction", ["Both", "Positive", "Negative"], index=1)
+    coverage_constraint = st.sidebar.slider("Coverage Constraint", min_value=0.0, max_value=1.0, value=0.20)
+
+    if selected_dataset != "Custom Dataset":
+        sql_query = dataset_options_with_explanations[selected_dataset]["SQL"]
+        data_filename = dataset_options_with_explanations[selected_dataset]["data_filename"]
+        data = pd.read_csv(PATH + data_filename, encoding='utf8')
+        # set the query input to the preloaded query
+
+    query_input = st.sidebar.text_area("Enter GROUP-BY SQL Query", value=sql_query, height=100)
 
     if selected_dataset == "Custom Dataset" and not uploaded_dataset:
         st.error("Please upload a dataset CSV file or select a preloaded dataset.")
         return
 
-    if uploaded_dataset and uploaded_dag:
+    if selected_dataset == "Custom Dataset" and not uploaded_dag:
+        st.error("Please upload a DAG file or select a preloaded dataset.")
+        return
+
+    if selected_dataset == "Custom Dataset" and not actionable_atts:
+        st.error("Please enter a list of actionable attributes.")
+        return
+
+    if selected_dataset == "Custom Dataset" and not query_input:
+        st.error("Please enter a valid SQL GROUP-BY query.")
+        return
+
+    if uploaded_dataset:
         data = pd.read_csv(uploaded_dataset, encoding='utf8')
-        dag = uploaded_dag.read().decode('utf-8')
 
-    else:
-        data = pd.read_csv(os.path.join(os.path.dirname(__file__), 'data', data_filename), encoding='utf8')
-
-    print(f"Using dataset: {data_filename}")
-    print(data.head(100))
-
-    # query_input = st.sidebar.code(causumx_result, language='sql')
-    query_input = st.sidebar.text_area("Enter GROUP-BY SQL Query", value=sql_query, height=100)
-    size_constraint = st.sidebar.slider("Constraint on Explanation's Size", min_value=1, max_value=10, value=2)
-    positive_or_negative = st.sidebar.radio("Causality Direction", ["Both", "Positive", "Negative"], index=1)
-    coverage_constraint = st.sidebar.slider("Coverage Constraint", min_value=0.0, max_value=1.0, value=0.20)
-
+    if uploaded_dag:
+        dag = dot_to_list(uploaded_dag)
+        print(dag)
 
     # extract the value insite the AVG (example: SELECT Country, AVG(ConvertedSalary)
     # FROM Stack-Overflow
@@ -151,23 +201,40 @@ def main():
     if group_by_value:
         st.markdown(f"Group By Value: {group_by_value}")
 
+
+
     execute_button = st.sidebar.button('Execute Query')
+
     if True:
         if not query_input:
             st.error("Please enter a valid SQL GROUP-BY query.")
         else:
             if True:
                 progress_text = f"Running CauSumX with size constraint {size_constraint} and coverage constraint {coverage_constraint}..."
-                my_bar = st.progress(0, text=progress_text)
+                # my_bar = st.progress(0, text=progress_text)
 
                 # for percent_complete in range(100):
                 #     time.sleep(0.01)
                 #     my_bar.progress(percent_complete + 1, text=progress_text)
 
-                dag = dataset_options_with_explanations[selected_dataset]["dag"]
-                # causumx_result = dataset_options_with_explanations[selected_dataset]["function"](k=size_constraint, tau=coverage_constraint)
 
-                my_bar.empty()
+                if selected_dataset != "Custom Dataset":
+                    dag = dataset_options_with_explanations[selected_dataset]["dag"]
+                    causumx_function = dataset_options_with_explanations[selected_dataset]["function"]
+                    # causumx_result = causumx_function(k=size_constraint, tau=coverage_constraint)
+
+
+                else:
+                    ordinal_atts = {}
+                    targetClass = target_value
+                    groupingAtt = group_by_value
+                    fds = calculate_functional_dependencies(data, group_by_value)
+                    fds = [group_by_value] + fds
+                    causumx_result = CauSumX.cauSumX(data, dag, ordinal_atts, targetClass, groupingAtt, fds, size_constraint, coverage_constraint,
+                                           actionable_atts, True, True,
+                                           print_times=True)
+
+                # my_bar.empty()
 
                 # dot_graph = get_causal_explanation()
                 col1, col2 = st.columns(2)
@@ -240,6 +307,7 @@ def load_dataset_options():
                 "SQL": "SELECT Country, AVG(ConvertedSalary)\nFROM Stack-Overflow\nGROUP BY Country",
                 "function": so,
                 "dag": SO_DAG,
+                "actionable_atts": [],
                 "data_filename": "so_countries_col_new.csv"
             },
         "Adults": {

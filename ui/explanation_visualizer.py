@@ -2,6 +2,10 @@ import os
 from graphviz import Digraph
 
 def get_causal_explanation(dag_as_list, green_nodes, red_nodes):
+
+    # Remove the terminating ; from each dag_as_list item
+    dag_as_list = [item.replace(';', '') for item in dag_as_list]
+
     dot = Digraph(comment='The Research DAG', node_attr={'fontname': 'Helvetica-bold', 'fontsize': '8'})
     # Add nodes and edges to the graph
     for item in dag_as_list:

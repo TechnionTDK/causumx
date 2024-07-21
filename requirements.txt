@@ -3,7 +3,7 @@ dowhy==0.8
 graphviz==0.20.2
 matplotlib==3.8.4
 mlxtend==0.23.1
-numpy==2.0.0
+numpy
 openai==1.35.10
 pandas==2.2.2
 plotly==5.22.0
