@@ -151,7 +151,6 @@ def getCates(DAG, t_h,t_l,cate_h, cate_l, df_g, ordinal_atts, target, treatments
     return treatments_cate, t_h, cate_h, t_l,cate_l
 
 # I can remove the ordinal_atts parameter from this function
-# TODO: use this to calculate the CATE
 def getTreatmentCATE(df_g, DAG,treatment,ordinal_atts,target):
     df_g['TempTreatment'] = df_g.apply(lambda row: addTempTreatment(row, treatment, ordinal_atts), axis=1)
     DAG_ = changeDAG(DAG, treatment)
@@ -209,9 +208,7 @@ def changeDAG(dag, randomTreatment):
             DAG.append(a)
     return list(set(DAG))
 
-# TODO: use this function
 # we need to filter only for the records we need
-
 def estimateATE(causal_graph, df, T, O):
     model = CausalModel(
         data=df,

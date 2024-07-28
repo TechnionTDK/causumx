@@ -14,7 +14,6 @@ dirname = os.path.dirname(__file__)
 PATH = os.path.join(dirname, "data/")
 APRIORI = 0.1
 
-# TODO: add ; at the end of each list item
 SO_DAG = [
     'Continent;',
     'HoursComputer;',
@@ -430,7 +429,6 @@ def synthatic(k,tau):
     CauSumX.cauSumX(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
             print_times=True)
 
-    # TODO: what is this?
     # CPE.BF(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
     #         print_times=True)
 

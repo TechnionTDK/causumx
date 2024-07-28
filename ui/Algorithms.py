@@ -156,7 +156,6 @@ def getHighLowTreatments(df_g, group, target,DAG, dropAtt, ordinal_atts, high, l
             t_l = t_l2
             cate_l = cate_l2
 
-    # TODO: support upper levels
     print('finished group: ', group)
     print(t_h, cate_h)
     print(t_l, cate_l)

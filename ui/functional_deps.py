@@ -75,5 +75,3 @@ if __name__ == "__main__":
 
     print(f"Functional dependencies for {grouping_attribute}:")
     print(fds)
-
-    # TODO: add this function to the UI app.py file
