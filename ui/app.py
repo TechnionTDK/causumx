@@ -87,13 +87,11 @@ def plot_interactive_bar_chart(data, country_column, value_column, title=None):
         top,
         x=country_column,
         y=f'Average {value_column}',
-        text=f'Average {value_column}',
         hover_data=['Record Count'],
         title=title or f'Top 15 {country_column} by Average {value_column}'
     )
 
     # Customize the layout
-    fig.update_traces(texttemplate='%{text:.2f}', textposition='outside')
     fig.update_layout(
         xaxis_title=country_column,
         yaxis_title=f'Average {value_column}',
