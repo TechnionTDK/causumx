@@ -35,6 +35,28 @@ python -m streamlit run ui/app.py --server.port 8081 --server.address localhost
 
 Open your web browser and navigate to `http://localhost:8081` to access the application.
 
+## Example Usage
+
+1. Upload the dataset:
+   - Use the file upload option to select `data/so_countries.csv`
+
+2. Upload the DAG file:
+   - Use the file upload option to select `data/so.dot`
+
+3. Enter the following SQL query in the text area:
+   ```sql
+   Group by country, calculate mean value and count records
+   ```
+
+4. Set the actionable attributes:
+   By default, all attributes are considered actionable. You can specify a subset if needed.
+   Example:
+   ```
+   Gender, SexualOrientation, EducationParents, RaceEthnicity, Age
+   ```
+
+5. Click the "Run CauSumX" button to execute the algorithm and view the results.
+
 ## Features
 
 - Upload your own dataset and DAG file.
