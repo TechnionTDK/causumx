@@ -41,3 +41,6 @@ Open your web browser and navigate to `http://localhost:8081` to access the appl
 - Select from preloaded datasets.
 - Enter and execute SQL GROUP-BY queries.
 - Visualize causal explanations and interactive bar charts.
+
+Original Paper:
+https://dl.acm.org/doi/10.1145/3639328
