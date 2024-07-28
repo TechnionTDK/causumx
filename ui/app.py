@@ -253,8 +253,6 @@ def main():
                     # st.text(f"Actionable Attributes: {actionable_atts}")
 
                     # TODO: remove the numbers on each bar chart bar
-                    # TODO: light theme
-                    # TODO:
 
                     causumx_result = json.loads(CauSumX.cauSumX(data, dag, ordinal_atts, targetClass, groupingAtt, fds, size_constraint, coverage_constraint,
                                            actionable_atts, True, True,
