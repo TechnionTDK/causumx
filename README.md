@@ -38,7 +38,7 @@ Open your web browser and navigate to `http://localhost:8081` to access the appl
 ## Example Usage
 
 1. Upload the dataset:
-   - Use the file upload option to select `data/so_countries.csv`
+   - Use the file upload option to select `data/so_countries_col_new.csv`
 
 2. Upload the DAG file:
    - Use the file upload option to select `data/so.dot`

@@ -13,6 +13,10 @@ from ui.explanation_visualizer import get_causal_explanation
 from ui.functional_deps import calculate_functional_dependencies
 
 st.set_page_config(page_title="CauSumX UI", layout="wide")
+
+# set the UI to be light theme
+
+
 filename_name = os.path.basename(__file__)
 dirname = os.path.dirname(__file__)
 PATH = os.path.join(dirname, "data/")
@@ -247,6 +251,10 @@ def main():
                     # st.text(f"Size Constraint: {size_constraint}")
                     # st.text(f"Coverage Constraint: {coverage_constraint}")
                     # st.text(f"Actionable Attributes: {actionable_atts}")
+
+                    # TODO: remove the numbers on each bar chart bar
+                    # TODO: light theme
+                    # TODO:
 
                     causumx_result = json.loads(CauSumX.cauSumX(data, dag, ordinal_atts, targetClass, groupingAtt, fds, size_constraint, coverage_constraint,
                                            actionable_atts, True, True,
