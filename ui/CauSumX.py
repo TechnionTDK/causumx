@@ -64,12 +64,12 @@ def cauSumX(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, action
             }
         })
 
-
-    result['target_class'] = targetClass
+    result['solution_details'] = solution_details
     result['overall_explainability'] = exp
     result['coverage'] = len(coverage) / m
     result['total_groups'] = len(coverage)
     result['total_groups_in_aggregated_view'] = m
+    result['target_class'] = targetClass
 
     if print_times:
         elapsed_time = time.time() - start_time

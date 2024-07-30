@@ -62,25 +62,6 @@ def getGroupstreatments(DAG, df, groupingAtt, groups, ordinal_atts, targetClass,
         print(f"Elapsed time step 2: {elapsed_time} seconds")
     return groups_dic, elapsed_time
 
-def getGroupstreatmentsforGreeedy(DAG, df, groupingAtt, groups, ordinal_atts, targetClass,
-                        high, low,actionable_atts, print_times, sample = False):
-    manager = multiprocessing.Manager()
-    groups_dic = manager.dict()
-    elapsed_time = 0
-
-    start_time = time.time()
-    arg_list = [(group, df, groups_dic, groupingAtt, targetClass, DAG, ordinal_atts, high, low,
-                 actionable_atts) for group in groups]
-    # Create a non-daemonic process pool
-    with multiprocessing.get_context('spawn').Pool() as pool: # TODO: can remove this...
-        # Apply the update_dictionary function to each argument in parallel
-        pool.starmap(process_group, arg_list)
-
-    elapsed_time = time.time() - start_time
-
-    if print_times:
-        print(f"Elapsed time step 2: {elapsed_time} seconds")
-    return groups_dic, elapsed_time
 
 
 def process_group(group, df, groups_dic, groupingAtt, targetClass,
@@ -109,31 +90,6 @@ def process_group(group, df, groups_dic, groupingAtt, targetClass,
 
     groups_dic[str(group)] = [len(df_g), covered, t_h, cate_h, t_l, cate_l, epxlainability]
 
-def process_group_greedy(group, df, groups_dic, groupingAtt, targetClass,
-                   DAG, ordinal_atts, high, low,
-    actionable_atts):
-
-
-    df['GROUP_MEMBER'] = df.apply(lambda row: isGroupMember(row, group), axis=1)
-    df_g = df[df['GROUP_MEMBER'] == 1]
-    drop_atts = list(group.keys())
-    drop_atts.append('GROUP_MEMBER')
-    drop_atts.append(groupingAtt)
-    # df_g = df_g.drop(drop_atts, axis = 1)
-
-    covered = set(df_g[groupingAtt].tolist())
-
-    #
-    # # step 2 - top down algorithm
-    #
-    (t_h, cate_h), (t_l, cate_l) = getHighTreatments(df_g, group, targetClass, # TODO: ONLY HIGH TREATMENT
-                                                         DAG, drop_atts,
-                                                        ordinal_atts, high, low, actionable_atts)
-
-
-    epxlainability = getExp(cate_h, cate_l, high, low)
-
-    groups_dic[str(group)] = [len(df_g), covered, t_h, cate_h, t_l, cate_l, epxlainability]
 
 
 def getExp(cate_h, cate_l, high, low):
@@ -161,17 +117,6 @@ def isGroupMember(row, group):
         elif not row[att] == group[att]:
             return 0
     return 1
-
-
-
-# TODO: maybe refacfor this code for greedy
-# We already have a grouping pattern at this staage. start with treatment level 1. for every treatment we calculate the unfairness score.
-# then we more to treatment level 2: (2 conditaaion do master AND learn python)
-# if treatment = 1 is not positive, so we dont need to check for treatment = 2. Only the treatment with positive will need move to second treatment.
-# only return the ones with maximal score.
-# in everystate we look for the maximum. If the maximum is in the previous state, we stop.
-# if in treatment level 3 - we need a
-# How do we calculate the score: CATE for everyone and CATE for the propeted and then we take the diff in absolute value.
 
 
 def getHighLowTreatments(df_g, group, target,DAG, dropAtt, ordinal_atts, high, low,actionable_atts_org):
@@ -211,7 +156,6 @@ def getHighLowTreatments(df_g, group, target,DAG, dropAtt, ordinal_atts, high, l
             t_l = t_l2
             cate_l = cate_l2
 
-    # TODO: support upper levels
     print('finished group: ', group)
     print(t_h, cate_h)
     print(t_l, cate_l)
@@ -237,5 +181,4 @@ def filter_above_below_median(treatments_cate):
     # print(f"filtered treatments_cate: {filtered}")
 
     return filtered
-
 

@@ -35,12 +35,12 @@ def causumx_output_to_natural_language_explanation(causumx_output):
             f"{i + 1}️⃣ For the group defined by {group_key}: '{group_value}', the most substantial positive effect on {target_class} (effect size of {format_number(cate_h)}) is observed for {t_h_key}: {t_h_value}, while the most substantial negative effect (effect size of {format_number(cate_l)}) is observed for {t_l_key}: {t_l_value}.\n")
 
 
-    return insights
+    # return insights
 
     client = OpenAI()
 
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4o-mini",
         response_format={ "type": "json_object" },
         messages=[
     {
@@ -48,7 +48,7 @@ def causumx_output_to_natural_language_explanation(causumx_output):
       "content": [
         {
           "type": "text",
-          "text": "You get a list of statements. You output a JSON object: {\"insight_1\": \"<the insight as human understandable text>\", \"insight_2\": \"<the insight as human understandable text>\", ...}"
+          "text": "You get a list of statements. You output a JSON object of insights (list of strings): Example JSON object: {\"insights\": [\"Insight 1 including the relevant numbers\", \"Insight 2 including the relevant numbers\"]}"
         }
       ]
     },
@@ -58,19 +58,19 @@ def causumx_output_to_natural_language_explanation(causumx_output):
                 "content": [
                     {
                         "type": "text",
-                        "text": f"Input:\n\n{explanation}"
+                        "text": f"Input:\n\n{insights}###########Output:\n\n"
                     }
                 ]
             },
         ],
-        temperature=1,
-        max_tokens=1500,
+        temperature=0.3,
+        max_tokens=3000,
         top_p=1,
         frequency_penalty=0,
         presence_penalty=0
     )
 
-    return json.loads(response.choices[0].message.content)
+    return json.loads(response.choices[0].message.content)['insights']
 
 
 

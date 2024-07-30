@@ -15,6 +15,55 @@ PATH = os.path.join(dirname, "data/")
 APRIORI = 0.1
 
 SO_DAG = [
+    'Continent;',
+    'HoursComputer;',
+    'UndergradMajor;',
+    'FormalEducation;',
+    'Age;',
+    'Gender;',
+    'Dependents;',
+    'Country;',
+    'DevType;',
+    'RaceEthnicity;',
+    'ConvertedSalary;',
+    'HDI;',
+    'GINI;',
+    'GDP;',
+    'HDI -> GINI;',
+    'GINI -> ConvertedSalary;',
+    'GINI -> GDP;',
+    'GDP -> ConvertedSalary;',
+    'Gender -> FormalEducation;',
+    'Gender -> UndergradMajor;',
+    'Gender -> DevType;',
+    'Gender -> ConvertedSalary;',
+    'Country -> ConvertedSalary;',
+    'Country -> FormalEducation;',
+    'Country -> RaceEthnicity;',
+    'Continent -> Country;',
+
+    'FormalEducation -> DevType;',
+    'FormalEducation -> UndergradMajor;',
+
+    'Continent -> UndergradMajor;',
+    'Continent -> FormalEducation;',
+    'Continent -> RaceEthnicity;',
+    'Continent -> ConvertedSalary;',
+
+    'RaceEthnicity -> ConvertedSalary;',
+    'UndergradMajor -> DevType;',
+
+    'DevType -> ConvertedSalary;',
+    'DevType -> HoursComputer;',
+    'Age -> ConvertedSalary;',
+    'Age -> DevType;',
+    'Age -> Dependents;',
+    'Age -> FormalEducation;',
+
+    'Dependents -> HoursComputer;',
+    'HoursComputer -> ConvertedSalary;',]
+
+SO_DAG = [
     'Continent',
     'HoursComputer',
     'UndergradMajor',
@@ -40,7 +89,7 @@ SO_DAG = [
     'Country -> ConvertedSalary',
     'Country -> FormalEducation',
     'Country -> RaceEthnicity',
-    'Continent -> Country ',
+    'Continent -> Country',
 
     'FormalEducation -> DevType',
     'FormalEducation -> UndergradMajor',
@@ -63,80 +112,80 @@ SO_DAG = [
     'Dependents -> HoursComputer',
     'HoursComputer -> ConvertedSalary',]
 
-GERMAN_DAG = ['status','duration','credit_history','purpose','amount','savings',
-        'employment_duration','installment_rate','personal_status_sex','other_debtors',
-        'present_residence','property','age','other_installment_plans','housing','number_credits',
-        'job','people_liable','telephone','foreign_worker','credit_risk',
-        'personal_status_sex -> credit_risk','personal_status_sex -> housing',
-        'personal_status_sex -> savings','personal_status_sex -> status',
-        'personal_status_sex -> credit_history','personal_status_sex -> duration',
-        'personal_status_sex -> amount','housing -> credit_risk',
-        'savings -> credit_risk','status -> credit_risk',
-        'duration -> credit_risk','credit_history -> credit_risk',
-        'amount -> credit_risk','age -> credit_risk',
-        'age -> housing','age -> credit_history',
-        'age -> savings','age -> status',
-        'age -> duration','age -> amount']
+GERMAN_DAG = ['status;','duration;','credit_history;','purpose;','amount;','savings;',
+        'employment_duration;','installment_rate;','personal_status_sex;','other_debtors;',
+        'present_residence;','property;','age;','other_installment_plans;','housing;','number_credits;',
+        'job;','people_liable;','telephone;','foreign_worker;','credit_risk;',
+        'personal_status_sex -> credit_risk;','personal_status_sex -> housing;',
+        'personal_status_sex -> savings;','personal_status_sex -> status;',
+        'personal_status_sex -> credit_history;','personal_status_sex -> duration;',
+        'personal_status_sex -> amount;','housing -> credit_risk;',
+        'savings -> credit_risk;','status -> credit_risk;',
+        'duration -> credit_risk;','credit_history -> credit_risk;',
+        'amount -> credit_risk;','age -> credit_risk;',
+        'age -> housing;','age -> credit_history;',
+        'age -> savings;','age -> status;',
+        'age -> duration;','age -> amount;']
 
 
 ADULT_DAG = [
-        'age',
-        'workclass',
-        'fnlwgt',
-        'education',
-        'education.num',
-        'marital.status',
-        'occupation',
-        'relationship',
-        'race',
-        'sex',
-        'capital.gain',
-        'capital.loss',
-        'hours.per.week',
-        'native.country',
-        'income',
-        'occupation_category',
+        'age;',
+        'workclass;',
+        'fnlwgt;',
+        'education;',
+        'education.num;',
+        'marital.status;',
+        'occupation;',
+        'relationship;',
+        'race;',
+        'sex;',
+        'capital.gain;',
+        'capital.loss;',
+        'hours.per.week;',
+        'native.country;',
+        'income;',
+        'occupation_category;',
         # A
-        'sex -> income',
-        'race -> income',
+        'sex -> income;',
+        'race -> income;',
         # C
-        'age -> income',
-        'native.country -> income',
+        'age -> income;',
+        'native.country -> income;',
         # M
-        'sex -> marital.status',
-        'race -> marital.status',
-        'age -> marital.status',
-        'native.country -> marital.status',
-        'marital.status -> income',
+        'sex -> marital.status;',
+        'race -> marital.status;',
+        'age -> marital.status;',
+        'native.country -> marital.status;',
+        'marital.status -> income;',
         # L
-        'marital.status -> education.num',
-        'sex -> education.num',
-        'race -> education.num',
-        'age -> education.num',
-        'native.country -> education.num',
-        'education.num -> income',
+        'marital.status -> education.num;',
+        'sex -> education.num;',
+        'race -> education.num;',
+        'age -> education.num;',
+        'native.country -> education.num;',
+        'education.num -> income;',
         # R
-        'hours.per.week -> income',
-        'occupation -> income',
-        'workclass -> income',
-        'education.num -> hours.per.week',
-        'education.num -> occupation',
-        'education.num -> workclass',
-        'marital.status -> hours.per.week',
-        'marital.status -> occupation',
-        'marital.status -> workclass',
-        'age -> hours.per.week',
-        'native.country -> hours.per.week',
-        'age -> occupation',
-        'native.country -> occupation',
-        'age -> workclass',
-        'native.country -> workclass',
-        'sex -> hours.per.week',
-        'sex -> occupation',
-        'sex -> workclass',
-        'race -> hours.per.week',
-        'race -> occupation',
-        'race -> workclass'
+        'hours.per.week -> income;',
+        'occupation -> income;',
+        'workclass -> income;',
+        'education.num -> hours.per.week;',
+        'education.num -> occupation;',
+        'education.num -> workclass;',
+        'marital.status -> hours.per.week;',
+        'marital.status -> occupation;',
+        'marital.status -> workclass;',
+        'age -> hours.per.week;',
+        'native.country -> hours.per.week;',
+        'age -> occupation;',
+        'native.country -> occupation;',
+        'age -> workclass;',
+        'native.country -> workclass;',
+        'sex -> hours.per.week;',
+        'sex -> occupation;',
+        'sex -> workclass;',
+        'race -> hours.per.week;',
+        'race -> occupation;',
+        'race -> workclass;'
     ]
 
 def so(k, tau):
@@ -380,7 +429,6 @@ def synthatic(k,tau):
     CauSumX.cauSumX(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
             print_times=True)
 
-    # TODO: what is this?
     # CPE.BF(df, DAG, ordinal_atts, targetClass, groupingAtt, fds, k, tau, actionable_atts, True, True,
     #         print_times=True)
 
@@ -388,9 +436,10 @@ if __name__ == '__main__':
     k = 5
     tau = 0.75 # which fraction of the results that need to cover the results. the explnaation will be covering 0.75% of the countries at once.
 
-    # so(k,tau)
+    result = so(k,tau)
+    print(result)
     # german(k,tau)
-    adult(k,tau)
+    # adult(k,tau)
     #accidents(k,tau)
     #impus(k,tau)
     # synthatic(5,1)
